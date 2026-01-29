@@ -1,5 +1,9 @@
 <div align="center">
 
+  <div>
+    <img src="assets/logo.svg" alt="claude-list Logo" width="128" height="128">
+  </div>
+
   <h1 style="margin-top: 10px;">claude-list</h1>
 
   CLI tool for viewing installed plugins, skills, agents, and MCP servers in Claude Code.
@@ -311,7 +315,7 @@ cargo test test_name
 
 Releases are automated via [cargo-dist](https://dist.clap.rs/):
 
-1. Push a git tag matching `v*` (e.g., `v0.1.1`)
+1. Push a git tag matching `x.y.z` (e.g., `0.1.1`)
 2. CI pipeline triggers automatically:
    - **Plan**: Generate build manifest
    - **Build**: Multi-platform builds (x86_64 Linux, x86_64/aarch64 macOS)
@@ -327,7 +331,7 @@ Releases are automated via [cargo-dist](https://dist.clap.rs/):
 git add -A && git commit -m "chore: bump version to 0.1.1"
 
 # 3. Create git tag
-git tag v0.1.1
+git tag 0.1.1
 
 # 4. Push to GitHub (including tags)
 git push && git push --tags
@@ -367,7 +371,7 @@ git checkout -b feature/your-feature-name
 
 # Make changes, test, then commit and push
 git add .
-git commit -m "Add feature: description"
+git commit -m "feat: description"
 git push origin feature/your-feature-name
 ```
 
@@ -383,7 +387,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 - [Claude Code](https://claude.com/claude-code) for the inspiration
 - [clap](https://github.com/clap-rs/clap) for CLI argument parsing
-- [anyhow](https://github.com/dtolnay/anyhow) for error handling
 - [cargo-dist](https://github.com/axodotdev/cargo-dist) for automated releases
 
 ---

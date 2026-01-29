@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="termGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f3460;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="200" height="200" rx="40" fill="url(#bgGrad)"/>
+
+  <!-- Terminal Window -->
+  <rect x="30" y="30" width="140" height="110" rx="8" fill="url(#termGrad)" stroke="#4a5568" stroke-width="2"/>
+
+  <!-- Terminal Title Bar -->
+  <rect x="30" y="30" width="140" height="24" rx="8" fill="#2d3748"/>
+  <rect x="30" y="46" width="140" height="8" fill="#2d3748"/>
+
+  <!-- Terminal Buttons -->
+  <circle cx="45" cy="42" r="5" fill="#fc8181"/>
+  <circle cx="62" cy="42" r="5" fill="#f6e05e"/>
+  <circle cx="79" cy="42" r="5" fill="#68d391"/>
+
+  <!-- Terminal Content - Code Lines -->
+  <rect x="42" y="60" width="60" height="6" rx="3" fill="#63b3ed"/>
+  <rect x="42" y="75" width="90" height="6" rx="3" fill="#4fd1c5"/>
+  <rect x="42" y="90" width="75" height="6" rx="3" fill="#f6e05e"/>
+  <rect x="42" y="105" width="85" height="6" rx="3" fill="#fc8181"/>
+
+  <!-- Claude-style Bracket Icon -->
+  <g transform="translate(100, 125)">
+    <!-- Left bracket [ -->
+    <path d="M0 0 L-8 0 L-8 50 L0 50" fill="none" stroke="#d69e2e" stroke-width="5" stroke-linecap="round"/>
+    <!-- Right bracket ] -->
+    <path d="M40 0 L48 0 L48 50 L40 50" fill="none" stroke="#d69e2e" stroke-width="5" stroke-linecap="round"/>
+    <!-- Center icon representing Claude/list -->
+    <rect x="15" y="8" width="10" height="34" rx="2" fill="#d69e2e"/>
+    <rect x="20" y="15" width="6" height="20" rx="1" fill="#1a1a2e"/>
+  </g>
+
+  <!-- Small decoration dots -->
+  <circle cx="175" cy="175" r="3" fill="#68d391" opacity="0.6"/>
+  <circle cx="185" cy="165" r="2" fill="#63b3ed" opacity="0.4"/>
+  <circle cx="168" cy="182" r="2" fill="#f6e05e" opacity="0.5"/>
+</svg>
