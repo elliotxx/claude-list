@@ -2,6 +2,10 @@
 
 Parse and display Claude Code `.claude` directory information: plugins, skills, agents, sessions, and more.
 
+[![CI](https://github.com/yourname/claude-list/workflows/CI/badge.svg)](https://github.com/yourname/claude-list/actions)
+[![Crates.io](https://img.shields.io/crates/v/claude-list)](https://crates.io/crates/claude-list)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Overview
 
 A Rust CLI tool that follows Unix philosophy—do one thing well. It reads your Claude Code configuration directory and presents key information in a clean, minimal format with modern aesthetics.
@@ -9,14 +13,29 @@ A Rust CLI tool that follows Unix philosophy—do one thing well. It reads your 
 ## Features
 
 - **Minimal by default**: Shows only essential info
-- **Progressive disclosure**: `-l` for details, `-ll` for full info
+- **Progressive disclosure**: `-l` for details, `--output detailed` for full info
 - **Machine-friendly**: `--json` output for scripting
+- **Filtering**: Filter by component type (`--plugins`, `--skills`, `--mcp`, etc.)
 - **Graceful**: Handles missing files and partial data
 
 ## Installation
 
+### From source
+
 ```bash
 cargo install claude-list
+```
+
+### From crates.io
+
+```bash
+cargo install claude-list
+```
+
+### From Homebrew (macOS)
+
+```bash
+brew install claude-list
 ```
 
 ## Usage
@@ -25,52 +44,175 @@ cargo install claude-list
 # Compact overview (default)
 claude-list
 
-# Detailed output
+# Detailed output with version, source, and path
 claude-list -l
+claude-list --output detailed
 
-# Full information with stats
-claude-list -ll
+# JSON output for scripts
+claude-list --json
 
 # Filter by type
 claude-list --plugins
 claude-list --skills
 claude-list --sessions
 claude-list --mcp
+claude-list --hooks
+claude-list --agents
+claude-list --commands
 
-# JSON output for scripts
-claude-list --json
+# Combine filters
+claude-list --plugins --skills
 
 # Custom .claude directory
-claude-list -C /path/to/.claude
+claude-list --config /path/to/.claude
 ```
 
 ## Example Output
 
-```
-CLAUDE-LIST v1.0.0
+### Compact Mode (Default)
 
-CONFIG: /Users/yym/.claude
+```
+CLAUDE-LIST v0.1.0
+
+CONFIG: /Users/user/.claude
 
 PLUGINS    3 installed
-  context7  plugin_context7  plugin_playwright
+  context7
+  plugin_playwright
+  plugin_example
+
 SKILLS     12 available
-  brainstorming  claude-code-guide  frontend-design  ...
+  brainstorming
+  claude-code-guide
+  ...
+
 SESSIONS   47 recorded
 MCP        2 servers
+  test-mcp
+  another-mcp
+```
+
+### Detailed Mode (`-l`)
+
+```
+CLAUDE-LIST v0.1.0
+
+CONFIG: /Users/user/.claude
+
+PLUGINS    3 installed
+  NAME                 VERSION  SOURCE     PATH
+  -------------------  -------  ---------  ---------------------------------
+  context7             2.1.0    official   /Users/user/.claude/settings.json
+  plugin_playwright    1.0.0    third-party /Users/user/.claude/settings.json
+  plugin_example       0.5.0    community  /Users/user/.claude/settings.json
+
+SKILLS     12 available
+  NAME                 VERSION  SOURCE     PATH
+  ...
+```
+
+### JSON Mode (`--json`)
+
+```json
+{
+  "version": "0.1.0",
+  "config_dir": "/Users/user/.claude",
+  "plugins": [...],
+  "skills": [...],
+  "sessions": {...},
+  "mcp_servers": [...],
+  "hooks": [...],
+  "agents": [...],
+  "commands": [...]
+}
 ```
 
 ## Building
 
 ```bash
+# Debug build
+cargo build
+
+# Release build (recommended for installation)
 cargo build --release
+
+# Install from source
+cargo install --path .
 ```
 
-## Testing
+## Development
+
+### Prerequisites
+
+- Rust 1.75+
+- Cargo
+
+### Quick Start
 
 ```bash
+# Run all checks
+cargo fmt && cargo clippy && cargo test
+
+# Run tests only
 cargo test
+
+# Run tests with fixtures
+cargo test --test cli_test
 ```
+
+### Code Quality
+
+```bash
+# Check format
+cargo fmt --check
+
+# Run clippy
+cargo clippy --all-features -- -D warnings
+
+# Fix format issues
+cargo fmt
+```
+
+### Testing
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test
+cargo test test_name
+
+# Run with verbose output
+cargo test --all-features --verbose
+
+# Run integration tests
+cargo test --test cli_test
+```
+
+## Supported Data Sources
+
+The parser supports both new and legacy formats for backward compatibility:
+
+| Component | New Format | Legacy Format |
+|-----------|------------|---------------|
+| Plugins | `plugins/installed_plugins.json` (v2) | `settings.json` |
+| Skills | `skills/*/skill.yaml` | - |
+| MCP | `mcp-servers/*/` | `mcp.json` |
+| Sessions | `history.jsonl` | `session_history.json` |
+| Commands | `commands/*.md` | - |
+| Agents | `agents/*.md` | - |
+| Hooks | `hooks/*.md` | - |
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Claude Code](https://claude.com/claude-code) for the inspiration
+- [clap](https://github.com/clap-rs/clap) for CLI argument parsing
+- [anyhow](https://github.com/dtolnay/anyhow) for error handling
