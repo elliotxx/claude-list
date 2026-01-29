@@ -45,9 +45,9 @@ pr-run-mode = "plan"
 
 # Pin GitHub Actions to specific commits for reproducible builds
 [workspace.metadata.dist.github-action-commits]
-actions/checkout = "11bd71901bbe5b1630ceea73d27597364c9af683"
-actions/upload-artifact = "4a6f16e7d1c1a2c2b4d5e3c7e5a8f0d9b6c4e2a8"
-actions/download-artifact = "9c19b2e96b6421fb4a4a9e9e2d1b5c8e7f3a2b1c"
+"actions/checkout" = "11bd71901bbe5b1630ceea73d27597364c9af683"
+"actions/upload-artifact" = "4a6f16e7d1c1a2c2b4d5e3c7e5a8f0d9b6c4e2a8"
+"actions/download-artifact" = "9c19b2e96b6421fb4a4a9e9e2d1b5c8e7f3a2b1c"
 
 # Build profile with optimizations for distribution
 [profile.dist]
