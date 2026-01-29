@@ -21,8 +21,14 @@ pub fn parse_mcp(base_path: &Path) -> Result<Vec<McpInfo>> {
         return Ok(vec![]);
     }
 
-    let content = fs::read_to_string(&mcp_path)?;
-    let json: Value = serde_json::from_str(&content)?;
+    let content = match fs::read_to_string(&mcp_path) {
+        Ok(c) => c,
+        Err(_) => return Ok(vec![]),
+    };
+    let json: Value = match serde_json::from_str(&content) {
+        Ok(j) => j,
+        Err(_) => return Ok(vec![]),
+    };
 
     let mut servers = Vec::new();
 
@@ -174,7 +180,10 @@ startCommand:
         // Should parse 2 servers
         assert_eq!(servers.len(), 2);
 
-        let unsplash = servers.iter().find(|s| s.name == "unsplash-mcp-server").unwrap();
+        let unsplash = servers
+            .iter()
+            .find(|s| s.name == "unsplash-mcp-server")
+            .unwrap();
         assert_eq!(unsplash.status, "installed");
         assert!(unsplash.command.is_some());
 
@@ -187,5 +196,79 @@ startCommand:
         let dir = TempDir::new().unwrap();
         let servers = parse_mcp(dir.path()).unwrap();
         assert!(servers.is_empty());
+    }
+
+    #[test]
+    fn test_mcp_multiple_servers() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let mcp_config = r#"{
+            "mcpServers": {
+                "server1": {"command": "npx", "args": ["-y", "server1"]},
+                "server2": {"command": "python", "args": ["server2.py"]},
+                "server3": {"command": "node", "args": ["server3.js"]}
+            }
+        }"#;
+
+        File::create(path.join("mcp.json"))
+            .unwrap()
+            .write_all(mcp_config.as_bytes())
+            .unwrap();
+
+        let servers = parse_mcp(path).unwrap();
+        assert_eq!(servers.len(), 3);
+        assert!(servers.iter().any(|s| s.name == "server1"));
+        assert!(servers.iter().any(|s| s.name == "server2"));
+        assert!(servers.iter().any(|s| s.name == "server3"));
+    }
+
+    #[test]
+    fn test_mcp_malformed_json() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        File::create(path.join("mcp.json"))
+            .unwrap()
+            .write_all(b"{ invalid json }")
+            .unwrap();
+
+        let servers = parse_mcp(path).unwrap();
+        assert!(servers.is_empty());
+    }
+
+    #[test]
+    fn test_mcp_empty_config() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let mcp_config = r#"{"mcpServers": {}}"#;
+        File::create(path.join("mcp.json"))
+            .unwrap()
+            .write_all(mcp_config.as_bytes())
+            .unwrap();
+
+        let servers = parse_mcp(path).unwrap();
+        assert!(servers.is_empty());
+    }
+
+    #[test]
+    fn test_mcp_directory_without_config() {
+        // mcp-servers directory exists but no mcp.json
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let mcp_servers_dir = path.join("mcp-servers");
+        std::fs::create_dir_all(&mcp_servers_dir).unwrap();
+        std::fs::create_dir_all(mcp_servers_dir.join("test-server")).unwrap();
+
+        File::create(mcp_servers_dir.join("test-server/package.json"))
+            .unwrap()
+            .write_all(b"{}")
+            .unwrap();
+
+        let servers = parse_mcp(path).unwrap();
+        assert_eq!(servers.len(), 1);
+        assert_eq!(servers[0].name, "test-server");
     }
 }

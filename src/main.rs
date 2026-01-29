@@ -6,6 +6,7 @@ use std::process;
 
 use claude_list::cli::{Args, OutputMode};
 use claude_list::formatters::compact::format_compact;
+use claude_list::formatters::detailed::format_detailed;
 use claude_list::parsers::{filter_components, parse_all};
 
 fn main() {
@@ -59,14 +60,8 @@ fn run() -> Result<()> {
                 format_compact(&info, &mut std::io::stdout())?;
             }
             OutputMode::Detailed => {
-                // For now, use compact format
-                // Detailed formatter to be implemented in User Story 2
-                format_compact(&info, &mut std::io::stdout())?;
-            }
-            OutputMode::Full => {
-                // For now, use compact format
-                // Full formatter to be implemented in User Story 2
-                format_compact(&info, &mut std::io::stdout())?;
+                // Detailed format: shows version, source, path
+                format_detailed(&info, &mut std::io::stdout())?;
             }
         }
     }

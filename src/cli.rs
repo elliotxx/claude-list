@@ -11,23 +11,29 @@ pub struct Args {
     #[arg(short, long, value_name = "PATH")]
     pub config: Option<PathBuf>,
 
-    /// Output mode: compact (default), detailed (-l), full (-ll)
+    /// Output mode: compact (default), detailed (-l)
     #[arg(short, long, value_enum)]
     pub output: Option<OutputMode>,
 
-    /// Filter by component type
+    /// Filter to show only plugins
     #[arg(long)]
     pub plugins: bool,
+    /// Filter to show only skills
     #[arg(long)]
     pub skills: bool,
+    /// Filter to show only sessions
     #[arg(long)]
     pub sessions: bool,
+    /// Filter to show only MCP servers
     #[arg(long)]
     pub mcp: bool,
+    /// Filter to show only hooks
     #[arg(long)]
     pub hooks: bool,
+    /// Filter to show only agents
     #[arg(long)]
     pub agents: bool,
+    /// Filter to show only commands
     #[arg(long)]
     pub commands: bool,
 
@@ -42,6 +48,4 @@ pub enum OutputMode {
     Compact,
     /// Detailed: name, version, source
     Detailed,
-    /// Full: all information including paths
-    Full,
 }

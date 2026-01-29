@@ -52,7 +52,7 @@ fn parse_sessions_from_jsonl(history_path: &Path) -> Result<SessionInfo> {
     let content = fs::read_to_string(history_path)?;
 
     let mut count = 0;
-    let mut last_timestamp = None;
+    let mut last_timestamp: Option<String> = None;
 
     for line in content.lines() {
         if line.trim().is_empty() {
@@ -62,10 +62,17 @@ fn parse_sessions_from_jsonl(history_path: &Path) -> Result<SessionInfo> {
         if let Ok(json) = serde_json::from_str::<Value>(line) {
             count += 1;
 
-            // Get timestamp
-            if let Some(ts) = json.get("timestamp").and_then(|v| v.as_u64()) {
-                if last_timestamp.is_none() || ts > last_timestamp.unwrap() {
-                    last_timestamp = Some(ts);
+            // Get timestamp (can be u64 or string)
+            if let Some(ts) = json.get("timestamp") {
+                let ts_str = match ts {
+                    Value::Number(n) => n.as_u64().map(|v| v.to_string()),
+                    Value::String(s) => Some(s.clone()),
+                    _ => None,
+                };
+                if let Some(ref ts_val) = ts_str {
+                    if last_timestamp.is_none() || ts_val > &last_timestamp.clone().unwrap() {
+                        last_timestamp = Some(ts_val.clone());
+                    }
                 }
             }
         }
@@ -73,7 +80,7 @@ fn parse_sessions_from_jsonl(history_path: &Path) -> Result<SessionInfo> {
 
     Ok(SessionInfo {
         count,
-        last_session: last_timestamp.map(|ts| ts.to_string()),
+        last_session: last_timestamp,
     })
 }
 
@@ -135,5 +142,77 @@ mod tests {
         let result = parse_sessions(dir.path()).unwrap();
         assert_eq!(result.count, 0);
         assert!(result.last_session.is_none());
+    }
+
+    #[test]
+    fn test_sessions_malformed_jsonl() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        // Valid line followed by invalid line
+        let jsonl_content = r#"{"timestamp":"2025-01-01T00:00:00Z"}
+invalid json
+{"timestamp":"2025-01-02T00:00:00Z"}
+"#;
+        File::create(path.join("history.jsonl"))
+            .unwrap()
+            .write_all(jsonl_content.as_bytes())
+            .unwrap();
+
+        let result = parse_sessions(path).unwrap();
+        // Should count valid lines only
+        assert_eq!(result.count, 2);
+    }
+
+    #[test]
+    fn test_sessions_empty_file() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        File::create(path.join("history.jsonl"))
+            .unwrap()
+            .write_all(b"")
+            .unwrap();
+
+        let result = parse_sessions(path).unwrap();
+        assert_eq!(result.count, 0);
+        assert!(result.last_session.is_none());
+    }
+
+    #[test]
+    fn test_sessions_single_line() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let jsonl_content = r#"{"timestamp":"2025-01-15T10:30:00Z"}"#;
+        File::create(path.join("history.jsonl"))
+            .unwrap()
+            .write_all(jsonl_content.as_bytes())
+            .unwrap();
+
+        let result = parse_sessions(path).unwrap();
+        assert_eq!(result.count, 1);
+        assert_eq!(result.last_session, Some("2025-01-15T10:30:00Z".to_string()));
+    }
+
+    #[test]
+    fn test_session_history_json_fallback() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        // Create old format session_history.json
+        let sessions_json = r#"{
+            "sessions": [
+                {"id": "1", "timestamp": "2025-01-01T10:00:00Z"},
+                {"id": "2", "timestamp": "2025-01-02T10:00:00Z"}
+            ]
+        }"#;
+        File::create(path.join("session_history.json"))
+            .unwrap()
+            .write_all(sessions_json.as_bytes())
+            .unwrap();
+
+        let result = parse_sessions(path).unwrap();
+        assert_eq!(result.count, 2);
     }
 }

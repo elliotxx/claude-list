@@ -187,7 +187,8 @@ fn test_json_output_with_filter() {
     let claude_dir = create_mock_claude_dir(&dir);
 
     let mut cmd = Command::cargo_bin("claude-list").unwrap();
-    cmd.arg("--config").arg(claude_dir)
+    cmd.arg("--config")
+        .arg(claude_dir)
         .arg("--json")
         .arg("--plugins");
 
@@ -318,4 +319,564 @@ fn test_version_output() {
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("claude-list"));
+}
+
+// ==================== User Story 2 Tests - Detailed Output ====================
+
+#[test]
+fn test_detailed_output_with_l_flag() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--output")
+        .arg("detailed");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show version numbers
+    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    // Should show source (official/third-party)
+    assert!(stdout.contains("official") || stdout.contains("third-party"));
+}
+
+#[test]
+fn test_detailed_output_shows_skills_version() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--output")
+        .arg("detailed")
+        .arg("--skills");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show version
+    assert!(stdout.contains("1.0.0"));
+    // Should show source (test-skill is third-party due to hyphen in name)
+    assert!(stdout.contains("third-party"));
+}
+
+#[test]
+fn test_output_mode_flags_exist() {
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--help");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Check that output mode options are documented
+    assert!(stdout.contains("-l") || stdout.contains("--long"));
+}
+
+// ==================== Polish Phase Tests - Edge Cases ====================
+
+#[test]
+fn test_malformed_skills_yaml() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills/test-skill")).unwrap();
+
+    // Malformed YAML
+    File::create(claude_dir.join("skills/test-skill/skill.yaml"))
+        .unwrap()
+        .write_all(b"invalid: yaml: content: [")
+        .unwrap();
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    // Should succeed with graceful degradation (skill skipped)
+    cmd.assert().success();
+}
+
+#[test]
+fn test_empty_skills_directory() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    // Only skills dir, no skills inside
+    std::fs::create_dir_all(claude_dir.join("skills")).unwrap();
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    cmd.assert().success();
+}
+
+#[test]
+fn test_empty_session_history() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    // Empty sessions array
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    // Should not show SESSIONS section when count is 0
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(!stdout.contains("SESSIONS"));
+}
+
+#[test]
+fn test_very_long_plugin_name() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    // Very long plugin name
+    let settings = r#"{
+        "installed_plugins": [
+            {"name": "this-is-a-very-long-plugin-name-with-many-hyphens-and-words"}
+        ]
+    }"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should handle long names gracefully
+    assert!(stdout.contains("very-long-plugin-name"));
+    assert!(output.status.success());
+}
+
+#[test]
+fn test_multiple_mcp_servers() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    // Create multiple MCP servers
+    std::fs::create_dir_all(claude_dir.join("mcp-servers")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("mcp-servers/server1")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("mcp-servers/server2")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("mcp-servers/server3")).unwrap();
+
+    // Create smithery.yaml for each
+    for server in ["server1", "server2", "server3"] {
+        let yaml = format!("name: {}\ncommand: npx -y @test/{}", server, server);
+        File::create(claude_dir.join(format!("mcp-servers/{}/smithery.yaml", server)))
+            .unwrap()
+            .write_all(yaml.as_bytes())
+            .unwrap();
+    }
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show all 3 MCP servers
+    assert!(stdout.contains("server1"));
+    assert!(stdout.contains("server2"));
+    assert!(stdout.contains("server3"));
+    assert!(stdout.contains("MCP"));
+    assert!(stdout.contains("3 servers"));
+}
+
+#[test]
+fn test_multiple_hooks() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+    std::fs::create_dir_all(claude_dir.join("hooks")).unwrap();
+
+    // Create multiple hooks
+    for hook_name in ["pre-commit-hook", "post-commit-hook", "pre-push-hook"] {
+        let hook_content = format!(
+            r#"---
+name: {}
+type: pre-commit
+---
+# {}
+"#,
+            hook_name, hook_name
+        );
+        File::create(claude_dir.join(format!("hooks/{}.md", hook_name)))
+            .unwrap()
+            .write_all(hook_content.as_bytes())
+            .unwrap();
+    }
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show all 3 hooks
+    assert!(stdout.contains("pre-commit-hook"));
+    assert!(stdout.contains("post-commit-hook"));
+    assert!(stdout.contains("pre-push-hook"));
+    assert!(stdout.contains("HOOKS"));
+    assert!(stdout.contains("3 configured"));
+}
+
+#[test]
+fn test_multiple_agents() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+    std::fs::create_dir_all(claude_dir.join("agents")).unwrap();
+
+    // Create multiple agents
+    for (i, agent_name) in ["database-agent", "frontend-agent", "devops-agent"]
+        .iter()
+        .enumerate()
+    {
+        let agent_content = format!(
+            r#"---
+name: {}
+description: Agent number {} for testing purposes
+---
+# {}
+"#,
+            agent_name,
+            i + 1,
+            agent_name
+        );
+        File::create(claude_dir.join(format!("agents/{}.md", agent_name)))
+            .unwrap()
+            .write_all(agent_content.as_bytes())
+            .unwrap();
+    }
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show all 3 agents
+    assert!(stdout.contains("database-agent"));
+    assert!(stdout.contains("frontend-agent"));
+    assert!(stdout.contains("devops-agent"));
+    assert!(stdout.contains("AGENTS"));
+    assert!(stdout.contains("3 defined"));
+}
+
+#[test]
+fn test_multiple_commands() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+    std::fs::create_dir_all(claude_dir.join("commands")).unwrap();
+
+    // Create multiple commands
+    for cmd_name in ["analyze-code", "generate-tests", "refactor-code"] {
+        let cmd_content = format!(
+            r#"---
+name: {}
+description: Command to {}
+allowed-tools: ["Read", "Edit", "Bash"]
+---
+# {}
+"#,
+            cmd_name,
+            cmd_name.replace("-", " "),
+            cmd_name
+        );
+        File::create(claude_dir.join(format!("commands/{}.md", cmd_name)))
+            .unwrap()
+            .write_all(cmd_content.as_bytes())
+            .unwrap();
+    }
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show all 3 commands
+    assert!(stdout.contains("analyze-code"));
+    assert!(stdout.contains("generate-tests"));
+    assert!(stdout.contains("refactor-code"));
+    assert!(stdout.contains("COMMANDS"));
+    assert!(stdout.contains("3 available"));
+}
+
+#[test]
+fn test_unicode_in_skill_description() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills/test-skill")).unwrap();
+
+    // Unicode description
+    let skill_content = r#"---
+name: test-skill
+version: 1.0.0
+description: 中文描述 with emoji 🚀 and special chars "quotes"
+---
+# Test Skill
+"#;
+    File::create(claude_dir.join("skills/test-skill/SKILL.md"))
+        .unwrap()
+        .write_all(skill_content.as_bytes())
+        .unwrap();
+
+    let settings = r#"{"installed_plugins": []}"#;
+    File::create(claude_dir.join("settings.json"))
+        .unwrap()
+        .write_all(settings.as_bytes())
+        .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    File::create(claude_dir.join("session_history.json"))
+        .unwrap()
+        .write_all(sessions.as_bytes())
+        .unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&claude_dir);
+
+    // Should handle unicode gracefully
+    cmd.assert().success();
+}
+
+#[test]
+fn test_cli_flags_combination() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--output")
+        .arg("detailed")
+        .arg("--plugins")
+        .arg("--skills");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show plugins and skills, not sessions
+    assert!(stdout.contains("PLUGINS"));
+    assert!(stdout.contains("SKILLS"));
+    assert!(!stdout.contains("SESSIONS"));
+    assert!(!stdout.contains("MCP"));
+    assert!(output.status.success());
+}
+
+#[test]
+fn test_json_with_filters() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--json")
+        .arg("--mcp")
+        .arg("--hooks");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Parse JSON and verify structure
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+
+    // MCP and hooks should have data
+    assert!(json.get("mcp_servers").is_some());
+    assert!(json.get("hooks").is_some());
+
+    // Other sections should be empty
+    assert!(json.get("plugins").unwrap().as_array().unwrap().is_empty());
+    assert!(json.get("skills").unwrap().as_array().unwrap().is_empty());
+}
+
+// ==================== CLI Behavior Tests - Filter Flag Descriptions ====================
+
+#[test]
+fn test_output_mode_has_only_compact_and_detailed() {
+    // Full mode should be removed - only compact and detailed available
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--help");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should mention compact and detailed
+    assert!(stdout.contains("compact"));
+    assert!(stdout.contains("detailed"));
+    // Full mode should not be mentioned as an option
+    // The "- full:" line should not exist under "Possible values:"
+    assert!(!stdout.contains("- full:"), "Full mode should not be available as an option");
+}
+
+#[test]
+fn test_filter_flags_have_descriptions() {
+    // Filter flags should have descriptive help text
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--help");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Each filter flag should have some description text
+    // They should NOT all share the same generic "Filter by component type" text
+    // The descriptions should mention what they filter (show only, specific, etc.)
+    assert!(stdout.contains("specific") || stdout.contains("only"));
+}
+
+#[test]
+fn test_all_filter_flags_have_descriptions() {
+    // Each filter flag should have its own non-empty description in --help
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--help");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    let lines: Vec<&str> = stdout.lines().collect();
+
+    // Find lines with filter flags and check they have descriptions (not just whitespace)
+    let filter_flags = ["--plugins", "--skills", "--sessions", "--mcp", "--hooks", "--agents", "--commands"];
+
+    for flag in &filter_flags {
+        let flag_line = lines.iter().find(|line| line.trim() == *flag);
+        assert!(flag_line.is_some(), "Flag {} not found in help", flag);
+
+        // Find the index and check next line has content (description)
+        if let Some(idx) = lines.iter().position(|line| line.trim() == *flag) {
+            // Description should be on the next line (after indentation)
+            if idx + 1 < lines.len() {
+                let desc_line = lines[idx + 1].trim();
+                // Description should not be empty or just another flag
+                assert!(!desc_line.is_empty() && !desc_line.starts_with("--"),
+                    "Flag {} has empty description", flag);
+            }
+        }
+    }
+}
+
+#[test]
+fn test_detailed_output_works() {
+    // Verify detailed output mode works correctly
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--output")
+        .arg("detailed");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should show version numbers
+    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    // Should show source
+    assert!(stdout.contains("official") || stdout.contains("third-party"));
 }

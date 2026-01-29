@@ -80,16 +80,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Integration test: detailed output with -l flag in tests/integration/test_cli.rs
-- [ ] T023 [P] [US2] Snapshot test: verify detailed output format in tests/integration/snapshots/
+- [x] T022 [P] [US2] Integration test: detailed output with -l flag in tests/integration/test_cli.rs
+- [x] T023 [P] [US2] Snapshot test: verify detailed output format in tests/integration/snapshots/
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Create detailed formatter in src/formatters/detailed.rs
-- [ ] T025 [US2] Add version field extraction to plugins parser (src/parsers/plugins.rs)
-- [ ] T026 [US2] Add version field extraction to skills parser (src/parsers/skills.rs)
-- [ ] T027 [US2] Update compact formatter to support full info display (-ll flag)
-- [ ] T028 [US2] Connect -l and -ll flags to detailed formatter
+- [x] T024 [US2] Create detailed formatter in src/formatters/detailed.rs
+- [x] T025 [US2] Add version field extraction to plugins parser (src/parsers/plugins.rs)
+- [x] T026 [US2] Add version field extraction to skills parser (src/parsers/skills.rs)
+- [x] T027 [US2] Update compact formatter to support full info display (-ll flag)
+- [x] T028 [US2] Connect -l and -ll flags to detailed formatter
 
 **Checkpoint**: User Story 2 complete - `claude-list -l` and `claude-list -ll` work
 
@@ -127,12 +127,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T036 [P] Add integration tests for edge cases (missing files, malformed JSON) in tests/integration/
-- [ ] T037 [P] Add unit tests for parsers in tests/unit/
+- [x] T036 [P] Add integration tests for edge cases (missing files, malformed JSON) in tests/integration/
+- [x] T037 [P] Add unit tests for parsers in tests/unit/
 - [ ] T038 Create test fixtures in tests/fixtures/.claude/ with mock data
 - [ ] T039 Add performance validation (ensure <2 seconds execution)
 - [ ] T040 [P] Documentation updates: update CLAUDE.md
-- [ ] T041 Run cargo fmt, cargo clip, add usage examplespy, and fix any warnings
+- [x] T041 Run cargo fmt, cargo clip, add usage examplespy, and fix any warnings
 
 ---
 

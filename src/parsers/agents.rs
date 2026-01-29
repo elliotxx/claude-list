@@ -85,6 +85,104 @@ mod tests {
         assert!(agents.is_empty());
     }
 
+    #[test]
+    fn test_agents_without_frontmatter() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let agents_dir = path.join("agents");
+        std::fs::create_dir_all(&agents_dir).unwrap();
+
+        // Agent without frontmatter
+        File::create(agents_dir.join("no-frontmatter.md"))
+            .unwrap()
+            .write_all(b"# Just a markdown file\nNo frontmatter\n")
+            .unwrap();
+
+        let agents = parse_agents(path).unwrap();
+        // Should still parse with default values
+        assert_eq!(agents.len(), 1);
+        assert_eq!(agents[0].name, "no-frontmatter");
+    }
+
+    #[test]
+    fn test_agents_malformed_frontmatter() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let agents_dir = path.join("agents");
+        std::fs::create_dir_all(&agents_dir).unwrap();
+
+        // Malformed frontmatter
+        File::create(agents_dir.join("bad-frontmatter.md"))
+            .unwrap()
+            .write_all(b"---\nname: test\ndescription: bad\n---")
+            .unwrap();
+
+        let agents = parse_agents(path).unwrap();
+        assert_eq!(agents.len(), 1);
+        assert_eq!(agents[0].name, "test");
+    }
+
+    #[test]
+    fn test_agents_description_extraction() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        create_agents_dir(path, "test-agent", Some("A very long description that spans multiple words"));
+
+        let agents = parse_agents(path).unwrap();
+        assert_eq!(agents.len(), 1);
+        assert_eq!(agents[0].name, "test-agent");
+        assert_eq!(
+            agents[0].description,
+            Some("A very long description that spans multiple words".to_string())
+        );
+    }
+
+    #[test]
+    fn test_agents_special_chars_in_name() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let agents_dir = path.join("agents");
+        std::fs::create_dir_all(&agents_dir).unwrap();
+
+        // Agent with special characters
+        let content = r#"---
+name: agent-with-dashes-and_numbers_123
+description: Test agent
+---
+# Agent
+"#;
+        File::create(agents_dir.join("agent-with-dashes-and_numbers_123.md"))
+            .unwrap()
+            .write_all(content.as_bytes())
+            .unwrap();
+
+        let agents = parse_agents(path).unwrap();
+        assert_eq!(agents.len(), 1);
+        assert_eq!(agents[0].name, "agent-with-dashes-and_numbers_123");
+    }
+
+    #[test]
+    fn test_agents_non_md_files_ignored() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let agents_dir = path.join("agents");
+        std::fs::create_dir_all(&agents_dir).unwrap();
+
+        // Create non-markdown files
+        File::create(agents_dir.join("script.sh")).unwrap();
+        File::create(agents_dir.join("data.json")).unwrap();
+        File::create(agents_dir.join("valid-agent.md")).unwrap();
+
+        let agents = parse_agents(path).unwrap();
+        assert_eq!(agents.len(), 1);
+        assert_eq!(agents[0].name, "valid-agent");
+    }
+
     fn create_agents_dir(base: &Path, name: &str, desc: Option<&str>) {
         let agent_dir = base.join("agents");
         std::fs::create_dir_all(&agent_dir).unwrap();

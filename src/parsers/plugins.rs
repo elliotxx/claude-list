@@ -81,7 +81,10 @@ fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
             // Parse "name@source" format
             let parts: Vec<&str> = full_name.split('@').collect();
             let name = parts[0].to_string();
-            let source = if parts.len() > 1 && parts[1] != "claude-plugins-official" && parts[1] != "claude-code-workflows" {
+            let source = if parts.len() > 1
+                && parts[1] != "claude-plugins-official"
+                && parts[1] != "claude-code-workflows"
+            {
                 Source::ThirdParty
             } else {
                 Source::Official
@@ -89,7 +92,10 @@ fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
 
             if let Some(arr) = plugin_array.as_array() {
                 if let Some(first) = arr.first() {
-                    let version = first.get("version").and_then(|v| v.as_str()).map(String::from);
+                    let version = first
+                        .get("version")
+                        .and_then(|v| v.as_str())
+                        .map(String::from);
 
                     plugins.push(PluginInfo {
                         name,
@@ -194,5 +200,68 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let plugins = parse_plugins(dir.path()).unwrap();
         assert!(plugins.is_empty());
+    }
+
+    #[test]
+    fn test_malformed_json() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        // Create malformed JSON
+        File::create(path.join("settings.json"))
+            .unwrap()
+            .write_all(b"{ invalid json }")
+            .unwrap();
+
+        // Should gracefully degrade to empty
+        let plugins = parse_plugins(path).unwrap();
+        assert!(plugins.is_empty());
+    }
+
+    #[test]
+    fn test_malformed_installed_json() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let plugins_dir = path.join("plugins");
+        std::fs::create_dir_all(&plugins_dir).unwrap();
+
+        // Create malformed installed_plugins.json
+        File::create(plugins_dir.join("installed_plugins.json"))
+            .unwrap()
+            .write_all(b"{ invalid }")
+            .unwrap();
+
+        // Should gracefully degrade to empty
+        let plugins = parse_plugins(path).unwrap();
+        assert!(plugins.is_empty());
+    }
+
+    #[test]
+    fn test_plugin_name_extraction_from_key() {
+        // Test that plugin name is correctly extracted from "name@source" key
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let plugins_dir = path.join("plugins");
+        std::fs::create_dir_all(&plugins_dir).unwrap();
+
+        let installed_json = r#"{
+            "version": 2,
+            "plugins": {
+                "my-awesome-plugin@some-source": [
+                    {"scope": "user", "version": "1.0.0"}
+                ]
+            }
+        }"#;
+
+        File::create(plugins_dir.join("installed_plugins.json"))
+            .unwrap()
+            .write_all(installed_json.as_bytes())
+            .unwrap();
+
+        let plugins = parse_plugins(path).unwrap();
+        assert_eq!(plugins.len(), 1);
+        assert_eq!(plugins[0].name, "my-awesome-plugin");
     }
 }

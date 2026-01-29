@@ -82,6 +82,89 @@ mod tests {
         assert!(hooks.is_empty());
     }
 
+    #[test]
+    fn test_hooks_without_frontmatter() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let hooks_dir = path.join("hooks");
+        std::fs::create_dir_all(&hooks_dir).unwrap();
+
+        // Hook without frontmatter
+        File::create(hooks_dir.join("no-frontmatter.md"))
+            .unwrap()
+            .write_all(b"# Just a markdown file\nNo hook type defined\n")
+            .unwrap();
+
+        let hooks = parse_hooks(path).unwrap();
+        assert_eq!(hooks.len(), 1);
+        assert_eq!(hooks[0].name, "no-frontmatter");
+        assert_eq!(hooks[0].hook_type, "unknown");
+    }
+
+    #[test]
+    fn test_hooks_malformed_frontmatter() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let hooks_dir = path.join("hooks");
+        std::fs::create_dir_all(&hooks_dir).unwrap();
+
+        // Malformed frontmatter (missing closing ---) but has valid hook line
+        File::create(hooks_dir.join("bad-frontmatter.md"))
+            .unwrap()
+            .write_all(b"---\nhook: pre-commit\n# Missing closing\n")
+            .unwrap();
+
+        let hooks = parse_hooks(path).unwrap();
+        assert_eq!(hooks.len(), 1);
+        assert_eq!(hooks[0].name, "bad-frontmatter");
+        // hook: line is still parsed even without closing ---
+        assert_eq!(hooks[0].hook_type, "pre-commit");
+    }
+
+    #[test]
+    fn test_hooks_empty_hook_type() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let hooks_dir = path.join("hooks");
+        std::fs::create_dir_all(&hooks_dir).unwrap();
+
+        // Empty hook type
+        let content = r#"---
+hook:
+---
+# Test
+"#;
+        File::create(hooks_dir.join("empty-type.md"))
+            .unwrap()
+            .write_all(content.as_bytes())
+            .unwrap();
+
+        let hooks = parse_hooks(path).unwrap();
+        assert_eq!(hooks.len(), 1);
+        assert_eq!(hooks[0].hook_type, "");
+    }
+
+    #[test]
+    fn test_hooks_non_md_files_ignored() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        let hooks_dir = path.join("hooks");
+        std::fs::create_dir_all(&hooks_dir).unwrap();
+
+        // Create non-markdown files
+        File::create(hooks_dir.join("script.sh")).unwrap();
+        File::create(hooks_dir.join("data.json")).unwrap();
+        File::create(hooks_dir.join("readme.md")).unwrap();
+
+        let hooks = parse_hooks(path).unwrap();
+        assert_eq!(hooks.len(), 1);
+        assert_eq!(hooks[0].name, "readme");
+    }
+
     fn create_hooks_dir(base: &Path, name: &str, hook_type: &str) {
         let hook_dir = base.join("hooks");
         std::fs::create_dir_all(&hook_dir).unwrap();
