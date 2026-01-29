@@ -230,22 +230,22 @@ git tag v0.1.1
 
 # 4. Push to GitHub (including tags)
 # CI will automatically:
-#   - Build release binary
-#   - Create GitHub Release
+#   - Validate (fmt + clippy + test)
+#   - Build multi-platform binaries (Linux/macOS)
+#   - Create GitHub Release with artifacts
 #   - Publish to crates.io
 git push && git push --tags
 ```
 
-### CI Release Pipeline
+### CI Release Pipeline (cargo-dist)
 
-Releases are automated via GitHub Actions:
+Releases are automated via [cargo-dist](https://dist.clap.rs/):
 
 1. Push a git tag matching `v*` (e.g., `v0.1.1`)
 2. CI pipeline triggers automatically:
-   - Runs all tests and clippy
-   - Builds release binary
-   - Creates GitHub Release with artifacts
-   - Publishes to crates.io
+   - **Plan**: Generate build manifest
+   - **Build**: Multi-platform builds (x86_64 Linux, x86_64/aarch64 macOS)
+   - **Publish**: GitHub Release + crates.io
 
 ### Configuring CI Token
 

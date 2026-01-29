@@ -1,0 +1,44 @@
+# cargo-dist configuration
+# https://dist.clap.rs/
+
+[workspace]
+members = []
+
+[project]
+name = "claude-list"
+version = "0.1.0"
+description = "CLI tool for viewing installed plugins, skills, agents, and MCP servers in Claude Code"
+authors = ["elliot <951376975@qq.com>"]
+homepage = "https://github.com/elliotxx/claude-list"
+repository = "https://github.com/elliotxx/claude-list"
+license = "MIT"
+
+[ci]
+github = { artifacts = true }
+
+[dist]
+# Build profile with optimizations for distribution
+[profile.dist]
+inherits = "release"
+lto = "thin"
+opt-level = 3
+strip = true
+
+# Target platforms to build for
+[targets]
+x86_64-unknown-linux-gnu = { os = "linux", arch = "x86_64" }
+x86_64-apple-darwin = { os = "macos", arch = "x86_64" }
+aarch64-apple-darwin = { os = "macos", arch = "aarch64" }
+
+# Installers to generate
+[installers]
+shell = {}
+powershell = {}
+
+# Generate checksums
+[checksum]
+algorithms = ["sha256"]
+
+# Release configuration
+[release]
+tag-name = "v{{version}}"
