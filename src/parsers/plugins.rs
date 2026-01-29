@@ -21,8 +21,16 @@ pub fn parse_plugins(base_path: &Path) -> Result<Vec<PluginInfo>> {
         return Ok(vec![]);
     }
 
-    let content = fs::read_to_string(&settings_path)?;
-    let json: Value = serde_json::from_str(&content)?;
+    let content = match fs::read_to_string(&settings_path) {
+        Ok(c) => c,
+        Err(_) => return Ok(vec![]),
+    };
+
+    // Gracefully handle malformed JSON
+    let json: Value = match serde_json::from_str(&content) {
+        Ok(j) => j,
+        Err(_) => return Ok(vec![]),
+    };
 
     let plugins = json
         .get("installed_plugins")
@@ -55,8 +63,16 @@ pub fn parse_plugins(base_path: &Path) -> Result<Vec<PluginInfo>> {
 
 /// Parse new format: plugins/installed_plugins.json (version 2)
 fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
-    let content = fs::read_to_string(installed_path)?;
-    let json: Value = serde_json::from_str(&content)?;
+    let content = match fs::read_to_string(installed_path) {
+        Ok(c) => c,
+        Err(_) => return Ok(vec![]),
+    };
+
+    // Gracefully handle malformed JSON
+    let json: Value = match serde_json::from_str(&content) {
+        Ok(j) => j,
+        Err(_) => return Ok(vec![]),
+    };
 
     let mut plugins = Vec::new();
 

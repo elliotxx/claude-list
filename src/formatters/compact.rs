@@ -28,8 +28,10 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     }
 
     // SESSIONS
-    writeln!(output, "SESSIONS   {} recorded", info.sessions.count)?;
-    writeln!(output)?;
+    if info.sessions.count > 0 {
+        writeln!(output, "SESSIONS   {} recorded", info.sessions.count)?;
+        writeln!(output)?;
+    }
 
     // MCP
     if !info.mcp_servers.is_empty() {
