@@ -1,9 +1,6 @@
 # cargo-dist configuration
 # https://dist.clap.rs/
 
-[workspace]
-members = []
-
 [project]
 name = "claude-list"
 version = "0.1.0"
