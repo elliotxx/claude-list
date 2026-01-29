@@ -323,6 +323,32 @@ fn test_version_output() {
 
 // ==================== User Story 2 Tests - Detailed Output ====================
 
+// Test for issue: -l flag should work for detailed output
+#[test]
+fn test_short_l_flag_for_detailed_output() {
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("-l");
+
+    // -l should not cause an error, it should enable detailed output
+    let output = cmd.output().unwrap();
+
+    // Command should succeed, not fail with "unexpected argument '-l'"
+    assert!(
+        output.status.success(),
+        "-l flag should be accepted, but got error: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Should show detailed output with version info
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+}
+
 #[test]
 fn test_detailed_output_with_l_flag() {
     let dir = TempDir::new().unwrap();

@@ -54,7 +54,12 @@ fn run() -> Result<()> {
         let json = serde_json::to_string_pretty(&info)?;
         println!("{}", json);
     } else {
-        let mode = args.output.unwrap_or(OutputMode::Compact);
+        // --detailed or -l flag takes precedence, then --output
+        let mode = if args.detailed {
+            OutputMode::Detailed
+        } else {
+            args.output.unwrap_or(OutputMode::Compact)
+        };
         match mode {
             OutputMode::Compact => {
                 format_compact(&info, &mut std::io::stdout())?;

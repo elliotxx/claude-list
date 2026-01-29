@@ -28,6 +28,7 @@
 
 ## Latest News 🔥
 
+- **[2026/01]** Published to crates.io - now installable via `cargo install claude-list`
 - **[2026/01]** Added Homebrew support with cargo-dist multi-platform builds
 - **[2026/01]** Released v0.1.0 with compact, detailed, and JSON output modes
 - **[2026/01]** Implemented 7 component parsers (plugins, skills, sessions, mcp, hooks, agents, commands)
@@ -319,7 +320,7 @@ Releases are automated via [cargo-dist](https://dist.clap.rs/):
 2. CI pipeline triggers automatically:
    - **Plan**: Generate build manifest
    - **Build**: Multi-platform builds (x86_64 Linux, x86_64/aarch64 macOS)
-   - **Publish**: GitHub Release + crates.io + Homebrew
+   - **Publish**: GitHub Release + Homebrew
 
 ### Release Process
 
@@ -335,7 +336,12 @@ git tag 0.1.1
 
 # 4. Push to GitHub (including tags)
 git push && git push --tags
+
+# 5. After CI completes, manually publish to crates.io
+cargo publish
 ```
+
+> **Note**: Publishing to crates.io requires manual `cargo publish` as cargo-dist does not support automatic crates.io publishing.
 
 ### CI Tokens Required
 

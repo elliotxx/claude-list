@@ -11,9 +11,13 @@ pub struct Args {
     #[arg(short, long, value_name = "PATH")]
     pub config: Option<PathBuf>,
 
-    /// Output mode: compact (default), detailed (-l)
-    #[arg(short, long, value_enum)]
+    /// Output mode: compact (default), detailed (via --output or -l)
+    #[arg(long, value_enum)]
     pub output: Option<OutputMode>,
+
+    /// Show detailed output with version, source, and path information
+    #[arg(short = 'l', long = "long")]
+    pub detailed: bool,
 
     /// Filter to show only plugins
     #[arg(long)]
