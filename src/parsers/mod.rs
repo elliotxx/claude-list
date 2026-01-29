@@ -27,32 +27,41 @@ pub fn parse_all(base_path: PathBuf) -> Result<ClaudeInfo> {
     })
 }
 
+/// Filter flags for selecting which component types to display
+#[derive(Debug, Default)]
+pub struct FilterFlags {
+    pub plugins: bool,
+    pub skills: bool,
+    pub sessions: bool,
+    pub mcp: bool,
+    pub hooks: bool,
+    pub agents: bool,
+    pub commands: bool,
+}
+
 /// Filter components based on CLI flags
-pub fn filter_components(
-    info: ClaudeInfo,
-    plugins: bool,
-    skills: bool,
-    sessions: bool,
-    mcp: bool,
-    hooks: bool,
-    agents: bool,
-    commands: bool,
-) -> ClaudeInfo {
+pub fn filter_components(info: ClaudeInfo, filters: FilterFlags) -> ClaudeInfo {
     // If no filter flags, show all
-    let show_all = !(plugins || skills || sessions || mcp || hooks || agents || commands);
+    let show_all = !(filters.plugins
+        || filters.skills
+        || filters.sessions
+        || filters.mcp
+        || filters.hooks
+        || filters.agents
+        || filters.commands);
 
     ClaudeInfo {
-        plugins: if show_all || plugins {
+        plugins: if show_all || filters.plugins {
             info.plugins
         } else {
             vec![]
         },
-        skills: if show_all || skills {
+        skills: if show_all || filters.skills {
             info.skills
         } else {
             vec![]
         },
-        sessions: if show_all || sessions {
+        sessions: if show_all || filters.sessions {
             info.sessions
         } else {
             SessionInfo {
@@ -60,22 +69,22 @@ pub fn filter_components(
                 last_session: None,
             }
         },
-        mcp_servers: if show_all || mcp {
+        mcp_servers: if show_all || filters.mcp {
             info.mcp_servers
         } else {
             vec![]
         },
-        hooks: if show_all || hooks {
+        hooks: if show_all || filters.hooks {
             info.hooks
         } else {
             vec![]
         },
-        agents: if show_all || agents {
+        agents: if show_all || filters.agents {
             info.agents
         } else {
             vec![]
         },
-        commands: if show_all || commands {
+        commands: if show_all || filters.commands {
             info.commands
         } else {
             vec![]

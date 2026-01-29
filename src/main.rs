@@ -7,7 +7,7 @@ use std::process;
 use claude_list::cli::{Args, OutputMode};
 use claude_list::formatters::compact::format_compact;
 use claude_list::formatters::detailed::format_detailed;
-use claude_list::parsers::{filter_components, parse_all};
+use claude_list::parsers::{filter_components, parse_all, FilterFlags};
 
 fn main() {
     if let Err(e) = run() {
@@ -38,16 +38,16 @@ fn run() -> Result<()> {
     let info = parse_all(config_dir)?;
 
     // Filter based on flags
-    let info = filter_components(
-        info,
-        args.plugins,
-        args.skills,
-        args.sessions,
-        args.mcp,
-        args.hooks,
-        args.agents,
-        args.commands,
-    );
+    let filters = FilterFlags {
+        plugins: args.plugins,
+        skills: args.skills,
+        sessions: args.sessions,
+        mcp: args.mcp,
+        hooks: args.hooks,
+        agents: args.agents,
+        commands: args.commands,
+    };
+    let info = filter_components(info, filters);
 
     // Output based on mode
     if args.json {
