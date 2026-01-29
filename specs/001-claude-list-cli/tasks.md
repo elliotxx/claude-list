@@ -47,9 +47,9 @@
 
 **Independent Test**: Run `claude-list` on mock .claude directory and verify counts are displayed
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 ⚠️ (Required by Constitution II)
 
-> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD required)**
 
 - [ ] T009 [P] [US1] Integration test: compact output displays all component types in tests/integration/test_cli.rs
 - [ ] T010 [P] [US1] Snapshot test: verify compact output format matches expected in tests/integration/snapshots/
@@ -101,11 +101,16 @@
 
 **Independent Test**: Run `claude-list --plugins` and verify only plugins are displayed
 
-### Tests for User Story 3
+### Tests for User Story 3 ⚠️ (Required by Constitution II)
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD required)**
 
 - [ ] T029 [P] [US3] Integration test: --plugins filter in tests/integration/test_cli.rs
 - [ ] T030 [P] [US3] Integration test: --skills filter in tests/integration/test_cli.rs
 - [ ] T031 [P] [US3] Integration test: --json output in tests/integration/test_cli.rs
+- [ ] T031b [P] [US3] Integration test: missing .claude directory error in tests/integration/test_cli.rs
+- [ ] T031c [P] [US3] Integration test: malformed JSON handling in tests/integration/test_cli.rs
+- [ ] T031d [P] [US3] Integration test: missing optional files (session_history.json) in tests/integration/test_cli.rs
 
 ### Implementation for User Story 3
 

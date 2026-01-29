@@ -43,7 +43,7 @@ As a user who wants more information about a specific component, I want to see v
 
 **Acceptance Scenarios**:
 
-1. **Given** the user runs `claude-list -l`, **When** the command executes, **Then** each component should show its name, version (if available), and source type (official/local/built-in).
+1. **Given** the user runs `claude-list -l`, **When** the command executes, **Then** each component should show its name, version (if available), and source type (official/third-party).
 2. **Given** the user runs `claude-list -ll`, **When** the command executes, **Then** additional information such as paths and usage statistics should be displayed.
 
 ---
