@@ -189,6 +189,84 @@ cargo test --all-features --verbose
 cargo test --test cli_test
 ```
 
+## Publishing
+
+This section describes how to publish claude-list to crates.io.
+
+### Version Management
+
+claude-list follows [Semantic Versioning](https://semver.org/):
+
+```
+MAJOR.MINOR.PATCH
+0.1.0, 0.1.1, 1.0.0
+```
+
+- **MAJOR**: Breaking changes
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes
+
+### Publishing Checklist
+
+Before publishing, ensure:
+
+- [ ] All tests pass: `cargo test --all-features`
+- [ ] Clippy passes: `cargo clippy --all-features -- -D warnings`
+- [ ] Format check: `cargo fmt --check`
+- [ ] README is up to date
+- [ ] LICENSE file exists
+
+### Release Process
+
+```bash
+# 1. Update version in Cargo.toml
+# Edit Cargo.toml: version = "0.1.0" → "0.1.1"
+
+# 2. Commit version change
+git add -A && git commit -m "chore: bump version to 0.1.1"
+
+# 3. Create git tag
+git tag v0.1.1
+
+# 4. Push to GitHub (including tags)
+git push && git push --tags
+
+# 5. Get API token from https://crates.io/settings/tokens
+# Create a new token with default (read/write) permissions
+
+# 6. Login to crates.io
+cargo login YOUR_API_TOKEN
+
+# 7. Publish to crates.io
+cargo publish
+```
+
+### About "yank" Permission
+
+When creating an API token, you'll see permissions including **yank**. This means:
+
+| Permission | Capability |
+|------------|------------|
+| **publish** | Upload new crate versions |
+| **yank** | Mark a version as "should not use" without deleting it |
+
+**What yank does:**
+- Existing users can continue using the yanked version
+- New users won't automatically install yanked versions
+- Used for: security vulnerabilities, critical bugs, deprecating versions
+
+### Installing Published Version
+
+After publishing, users can install via:
+
+```bash
+# From crates.io
+cargo install claude-list
+
+# From source
+cargo install --git https://github.com/elliotxx/claude-list
+```
+
 ## Supported Data Sources
 
 The parser supports both new and legacy formats for backward compatibility:
