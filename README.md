@@ -62,14 +62,85 @@ MCP        2 servers
 ## Building
 
 ```bash
+# Debug build
+cargo build
+
+# Release build
 cargo build --release
 ```
 
-## Testing
+## Development
+
+### Quick Start
 
 ```bash
-cargo test
+# Show available commands
+make
+
+# Run all checks (fmt + clippy + test)
+make check
+
+# Run tests only
+make test
+
+# Run with test fixtures
+make run-test
 ```
+
+### Makefile Commands
+
+| Command | Description |
+|---------|-------------|
+| `make` | Show help (default) |
+| `make check` | Run all checks (fmt + clippy + test) |
+| `make test` | Run unit tests |
+| `make lint` | Run code linting |
+| `make clippy` | Run static analysis |
+| `make fmt` | Check code format |
+| `make fmt-fix` | Auto-fix format issues |
+| `make build` | Debug build |
+| `make build-release` | Release build |
+| `make run` | Run with `~/.claude` |
+| `make run-test` | Run with test fixtures |
+| `make check-diff` | Show uncommitted changes |
+| `make clean` | Clean build artifacts |
+
+### Testing
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test
+cargo test test_name
+
+# Run with verbose output
+cargo test --all-features --verbose
+```
+
+### Code Quality
+
+```bash
+# Check format
+cargo fmt --check
+
+# Run clippy
+cargo clippy --all-features -- -D warnings
+```
+
+## Supported Data Sources
+
+The parser supports both new and legacy formats for backward compatibility:
+
+| Component | New Format | Legacy Format |
+|-----------|------------|---------------|
+| Plugins | `plugins/installed_plugins.json` (v2) | `settings.json` |
+| Skills | `skills/*/SKILL.md` | `skills/*/skill.yaml` |
+| MCP | `mcp-servers/*/` | `mcp.json` |
+| Sessions | `history.jsonl` | `session_history.json` |
+| Commands | `commands/*.md` | - |
+| Agents | `agents/*.md` | - |
+| Hooks | `hooks/*.md` | - |
 
 ## License
 
