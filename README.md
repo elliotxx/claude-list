@@ -2,7 +2,7 @@
 
 Parse and display Claude Code `.claude` directory information: plugins, skills, agents, sessions, and more.
 
-[![CI](https://github.com/yourname/claude-list/workflows/CI/badge.svg)](https://github.com/yourname/claude-list/actions)
+[![CI](https://github.com/elliotxx/claude-list/workflows/CI/badge.svg)](https://github.com/elliotxx/claude-list/actions)
 [![Crates.io](https://img.shields.io/crates/v/claude-list)](https://crates.io/crates/claude-list)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
