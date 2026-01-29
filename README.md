@@ -225,35 +225,36 @@ Before publishing, ensure:
 # 2. Commit version change
 git add -A && git commit -m "chore: bump version to 0.1.1"
 
-# 3. Create git tag
+# 3. Create git tag (Go style: push tag triggers CI release)
 git tag v0.1.1
 
 # 4. Push to GitHub (including tags)
+# CI will automatically:
+#   - Build release binary
+#   - Create GitHub Release
+#   - Publish to crates.io
 git push && git push --tags
-
-# 5. Get API token from https://crates.io/settings/tokens
-# Create a new token with default (read/write) permissions
-
-# 6. Login to crates.io
-cargo login YOUR_API_TOKEN
-
-# 7. Publish to crates.io
-cargo publish
 ```
 
-### About "yank" Permission
+### CI Release Pipeline
 
-When creating an API token, you'll see permissions including **yank**. This means:
+Releases are automated via GitHub Actions:
 
-| Permission | Capability |
-|------------|------------|
-| **publish** | Upload new crate versions |
-| **yank** | Mark a version as "should not use" without deleting it |
+1. Push a git tag matching `v*` (e.g., `v0.1.1`)
+2. CI pipeline triggers automatically:
+   - Runs all tests and clippy
+   - Builds release binary
+   - Creates GitHub Release with artifacts
+   - Publishes to crates.io
 
-**What yank does:**
-- Existing users can continue using the yanked version
-- New users won't automatically install yanked versions
-- Used for: security vulnerabilities, critical bugs, deprecating versions
+### Configuring CI Token
+
+Before first release, add `CARGO_REGISTRY_TOKEN` to GitHub secrets:
+
+1. Get token from https://crates.io/settings/tokens
+2. Go to https://github.com/elliotxx/claude-list/settings/secrets/actions
+3. Add new secret: `CARGO_REGISTRY_TOKEN`
+4. CI will use this token automatically on release
 
 ### Installing Published Version
 

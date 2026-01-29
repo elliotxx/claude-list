@@ -36,9 +36,13 @@ jobs:
         run: cargo build --release --verbose
       - name: Create artifact
         run: tar -czf claude-list-x86_64-unknown-linux-gnu.tar.gz -C target/release claude-list
-      - name: Create release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: claude-list-x86_64-unknown-linux-gnu.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish to crates.io
+        run: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
