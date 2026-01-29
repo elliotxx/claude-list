@@ -29,7 +29,8 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install cargo-dist
-        uses: taiki-e/install-action@cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/latest/download/cargo-dist-installer.sh | sh
       - name: Plan the release
         id: plan
         run: |
@@ -52,7 +53,8 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install cargo-dist
-        uses: taiki-e/install-action@cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/latest/download/cargo-dist-installer.sh | sh
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -76,7 +78,8 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install cargo-dist
-        uses: taiki-e/install-action@cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/latest/download/cargo-dist-installer.sh | sh
       - name: Publish to crates.io
         run: cargo dist publish --manifest-plan '${{ needs.plan.outputs.plan }}'
         env:
