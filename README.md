@@ -345,10 +345,11 @@ cargo publish
 
 ### CI Tokens Required
 
-| Secret | Purpose |获取位置|
-|--------|---------|--------|
+| Secret | Purpose | 获取位置 |
+|--------|---------|----------|
 | `CARGO_REGISTRY_TOKEN` | Publish to crates.io | [crates.io/settings/tokens](https://crates.io/settings/tokens) |
 | `HOMEBREW_TAP_TOKEN` | Publish to Homebrew | [GitHub Settings](https://github.com/settings/tokens) |
+| `NPM_TOKEN` | Publish to npm (requires 2FA bypass) | [npmjs.com/settings/tokens](https://www.npmjs.com/settings/tokens) |
 
 ---
 
