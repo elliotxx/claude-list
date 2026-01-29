@@ -1,6 +1,6 @@
 # claude-list
 
-Parse and display Claude Code `.claude` directory information: plugins, skills, agents, sessions, and more.
+CLI tool for viewing installed plugins, skills, agents, and MCP servers in Claude Code.
 
 [![CI](https://github.com/elliotxx/claude-list/workflows/CI/badge.svg)](https://github.com/elliotxx/claude-list/actions)
 [![Crates.io](https://img.shields.io/crates/v/claude-list)](https://crates.io/crates/claude-list)
