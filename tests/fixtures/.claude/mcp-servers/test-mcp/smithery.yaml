@@ -1,0 +1,11 @@
+# Smithery configuration for test-mcp
+name: test-mcp
+description: A test MCP server for claude-list fixtures
+
+startCommand:
+  type: stdio
+  commandFunction: |
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@test/mcp-server']
+    })

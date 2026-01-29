@@ -129,9 +129,9 @@
 
 - [x] T036 [P] Add integration tests for edge cases (missing files, malformed JSON) in tests/integration/
 - [x] T037 [P] Add unit tests for parsers in tests/unit/
-- [ ] T038 Create test fixtures in tests/fixtures/.claude/ with mock data
-- [ ] T039 Add performance validation (ensure <2 seconds execution)
-- [ ] T040 [P] Documentation updates: update CLAUDE.md
+- [x] T038 Create test fixtures in tests/fixtures/.claude/ with mock data
+- [x] T039 Add performance validation (ensure <2 seconds execution)
+- [x] T040 [P] Documentation updates: update CLAUDE.md
 - [x] T041 Run cargo fmt, cargo clip, add usage examplespy, and fix any warnings
 
 ---

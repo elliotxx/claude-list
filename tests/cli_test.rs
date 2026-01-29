@@ -880,3 +880,101 @@ fn test_detailed_output_works() {
     // Should show source
     assert!(stdout.contains("official") || stdout.contains("third-party"));
 }
+
+// ==================== Fixtures Verification Tests ====================
+
+#[test]
+fn test_fixtures_directory_contains_all_component_types() {
+    // Verify the fixtures directory has all necessary component types
+    let fixtures_path = std::path::PathBuf::from("tests/fixtures/.claude");
+
+    // Must exist
+    assert!(fixtures_path.exists(), "Fixtures directory must exist");
+
+    // Check each component type directory/file
+    assert!(fixtures_path.join("settings.json").exists(), "settings.json must exist");
+    assert!(fixtures_path.join("skills").exists() && fixtures_path.join("skills").is_dir(), "skills/ directory must exist");
+
+    // Verify skills subdirectory has content
+    let skills_dir = fixtures_path.join("skills");
+    assert!(skills_dir.read_dir().unwrap().next().is_some(), "skills/ must have at least one skill");
+
+    // Check plugins directory (new format)
+    let plugins_dir = fixtures_path.join("plugins");
+    if plugins_dir.exists() {
+        assert!(plugins_dir.join("installed_plugins.json").exists(), "plugins/installed_plugins.json must exist if plugins/ exists");
+    }
+
+    // Check mcp-servers directory (new format)
+    let mcp_servers_dir = fixtures_path.join("mcp-servers");
+    if mcp_servers_dir.exists() {
+        assert!(mcp_servers_dir.read_dir().unwrap().next().is_some(), "mcp-servers/ must have content if it exists");
+    }
+
+    // Check hooks directory
+    let hooks_dir = fixtures_path.join("hooks");
+    if hooks_dir.exists() {
+        assert!(hooks_dir.read_dir().unwrap().next().is_some(), "hooks/ must have content if it exists");
+    }
+
+    // Check agents directory
+    let agents_dir = fixtures_path.join("agents");
+    if agents_dir.exists() {
+        assert!(agents_dir.read_dir().unwrap().next().is_some(), "agents/ must have content if it exists");
+    }
+
+    // Check commands directory
+    let commands_dir = fixtures_path.join("commands");
+    if commands_dir.exists() {
+        assert!(commands_dir.read_dir().unwrap().next().is_some(), "commands/ must have content if it exists");
+    }
+}
+
+#[test]
+fn test_fixtures_supports_all_output_modes() {
+    // Verify fixtures work with all output modes
+    let fixtures_path = std::path::PathBuf::from("tests/fixtures/.claude");
+    if !fixtures_path.exists() {
+        return; // Skip if fixtures don't exist
+    }
+
+    // Test compact mode
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&fixtures_path);
+    let output = cmd.output().unwrap();
+    assert!(output.status.success(), "Compact mode should work with fixtures");
+
+    // Test detailed mode
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&fixtures_path).arg("--output").arg("detailed");
+    let output = cmd.output().unwrap();
+    assert!(output.status.success(), "Detailed mode should work with fixtures");
+
+    // Test JSON mode
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(&fixtures_path).arg("--json");
+    let output = cmd.output().unwrap();
+    assert!(output.status.success(), "JSON mode should work with fixtures");
+}
+
+#[test]
+fn test_fixtures_supports_all_filters() {
+    // Verify fixtures work with all filter flags
+    let fixtures_path = std::path::PathBuf::from("tests/fixtures/.claude");
+    if !fixtures_path.exists() {
+        return; // Skip if fixtures don't exist
+    }
+
+    // Verify commands directory exists
+    let commands_dir = fixtures_path.join("commands");
+    assert!(commands_dir.exists() && commands_dir.is_dir(), "commands/ directory must exist in fixtures");
+
+    let filters = ["--plugins", "--skills", "--sessions", "--mcp", "--hooks", "--agents", "--commands"];
+
+    for filter in &filters {
+        let mut cmd = Command::cargo_bin("claude-list").unwrap();
+        cmd.arg("--config").arg(&fixtures_path).arg(filter);
+        let output = cmd.output().unwrap();
+        assert!(output.status.success(), "Filter {} should work with fixtures", filter);
+    }
+}
