@@ -165,7 +165,7 @@ cargo install claude-list
 ### Option 2: From Homebrew (macOS)
 
 ```bash
-brew install elliotxx/tap/claude-list
+brew tap elliotxx/tap && brew install elliotxx/tap/claude-list
 ```
 
 ### Option 3: From GitHub Releases
