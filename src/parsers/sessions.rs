@@ -192,7 +192,10 @@ invalid json
 
         let result = parse_sessions(path).unwrap();
         assert_eq!(result.count, 1);
-        assert_eq!(result.last_session, Some("2025-01-15T10:30:00Z".to_string()));
+        assert_eq!(
+            result.last_session,
+            Some("2025-01-15T10:30:00Z".to_string())
+        );
     }
 
     #[test]

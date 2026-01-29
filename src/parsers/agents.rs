@@ -129,7 +129,11 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let path = dir.path();
 
-        create_agents_dir(path, "test-agent", Some("A very long description that spans multiple words"));
+        create_agents_dir(
+            path,
+            "test-agent",
+            Some("A very long description that spans multiple words"),
+        );
 
         let agents = parse_agents(path).unwrap();
         assert_eq!(agents.len(), 1);
