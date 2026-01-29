@@ -345,7 +345,7 @@ cargo publish
 
 ### CI Tokens Required
 
-| Secret | Purpose | 获取位置 |
+| Secret | Purpose | Location |
 |--------|---------|----------|
 | `CARGO_REGISTRY_TOKEN` | Publish to crates.io | [crates.io/settings/tokens](https://crates.io/settings/tokens) |
 | `HOMEBREW_TAP_TOKEN` | Publish to Homebrew | [GitHub Settings](https://github.com/settings/tokens) |
@@ -368,7 +368,7 @@ We welcome contributions! Feel free to submit issues and pull requests.
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/YOUR_USERNAME/claude-list.git
+git clone https://github.com/elliotxx/claude-list.git
 cd claude-list
 
 # Follow installation steps above
