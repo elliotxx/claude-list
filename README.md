@@ -28,10 +28,10 @@
 
 ## Latest News 🔥
 
+- **[2026/01]** Released v0.1.1 with `-l` flag support and npm package
 - **[2026/01]** Published to crates.io - now installable via `cargo install claude-list`
 - **[2026/01]** Added Homebrew support with cargo-dist multi-platform builds
 - **[2026/01]** Released v0.1.0 with compact, detailed, and JSON output modes
-- **[2026/01]** Implemented 7 component parsers (plugins, skills, sessions, mcp, hooks, agents, commands)
 
 ---
 
@@ -102,7 +102,7 @@ claude-list --config /path/to/.claude
 ### Compact Mode (Default)
 
 ```
-CLAUDE-LIST v0.1.0
+CLAUDE-LIST v0.1.1
 
 CONFIG: /Users/user/.claude
 
@@ -125,7 +125,7 @@ MCP        2 servers
 ### Detailed Mode (`-l`)
 
 ```
-CLAUDE-LIST v0.1.0
+CLAUDE-LIST v0.1.1
 
 CONFIG: /Users/user/.claude
 
@@ -141,7 +141,7 @@ PLUGINS    3 installed
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "config_dir": "/Users/user/.claude",
   "plugins": [...],
   "skills": [...],
@@ -163,13 +163,19 @@ PLUGINS    3 installed
 cargo install claude-list
 ```
 
-### Option 2: From Homebrew (macOS)
+### Option 2: From npm
+
+```bash
+npm install -g claude-list
+```
+
+### Option 3: From Homebrew (macOS)
 
 ```bash
 brew tap elliotxx/tap && brew install elliotxx/tap/claude-list
 ```
 
-### Option 3: From GitHub Releases
+### Option 4: From GitHub Releases
 
 Download pre-built binaries from [GitHub Releases](https://github.com/elliotxx/claude-list/releases):
 
@@ -185,7 +191,7 @@ tar -xzf claude-list-aarch64-apple-darwin.tar.gz
 ./claude-list
 ```
 
-### Option 4: From Source
+### Option 5: From Source
 
 ```bash
 git clone https://github.com/elliotxx/claude-list.git
@@ -326,13 +332,13 @@ Releases are automated via [cargo-dist](https://dist.clap.rs/):
 
 ```bash
 # 1. Update version in Cargo.toml
-# Edit Cargo.toml: version = "0.1.0" → "0.1.1"
+# Edit Cargo.toml: version = "0.1.1" → "0.1.2"
 
 # 2. Commit version change
-git add -A && git commit -m "chore: bump version to 0.1.1"
+git add -A && git commit -m "chore: bump version to 0.1.2"
 
 # 3. Create git tag
-git tag 0.1.1
+git tag 0.1.2
 
 # 4. Push to GitHub (including tags)
 git push && git push --tags
