@@ -51,8 +51,8 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD required)**
 
-- [ ] T009 [P] [US1] Integration test: compact output displays all component types in tests/integration/test_cli.rs
-- [ ] T010 [P] [US1] Snapshot test: verify compact output format matches expected in tests/integration/snapshots/
+- [x] T009 [P] [US1] Integration test: compact output displays all component types in tests/integration/test_cli.rs
+- [x] T010 [P] [US1] Snapshot test: verify compact output format matches expected in tests/integration/snapshots/
 
 ### Implementation for User Story 1
 
@@ -105,19 +105,19 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD required)**
 
-- [ ] T029 [P] [US3] Integration test: --plugins filter in tests/integration/test_cli.rs
-- [ ] T030 [P] [US3] Integration test: --skills filter in tests/integration/test_cli.rs
-- [ ] T031 [P] [US3] Integration test: --json output in tests/integration/test_cli.rs
-- [ ] T031b [P] [US3] Integration test: missing .claude directory error in tests/integration/test_cli.rs
-- [ ] T031c [P] [US3] Integration test: malformed JSON handling in tests/integration/test_cli.rs
-- [ ] T031d [P] [US3] Integration test: missing optional files (session_history.json) in tests/integration/test_cli.rs
+- [x] T029 [P] [US3] Integration test: --plugins filter in tests/integration/test_cli.rs
+- [x] T030 [P] [US3] Integration test: --skills filter in tests/integration/test_cli.rs
+- [x] T031 [P] [US3] Integration test: --json output in tests/integration/test_cli.rs
+- [x] T031b [P] [US3] Integration test: missing .claude directory error in tests/integration/test_cli.rs
+- [x] T031c [P] [US3] Integration test: malformed JSON handling in tests/integration/test_cli.rs
+- [x] T031d [P] [US3] Integration test: missing optional files (session_history.json) in tests/integration/test_cli.rs
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Create JSON formatter in src/formatters/json.rs
-- [ ] T033 [US3] Implement filtering logic in main parsing (respect --plugins, --skills, etc. flags)
-- [ ] T034 [US3] Implement JSON output mode with serde
-- [ ] T035 [US3] Connect filter flags to parser execution and formatter selection
+- [x] T032 [US3] Create JSON formatter in src/formatters/json.rs
+- [x] T033 [US3] Implement filtering logic in main parsing (respect --plugins, --skills, etc. flags)
+- [x] T034 [US3] Implement JSON output mode with serde
+- [x] T035 [US3] Connect filter flags to parser execution and formatter selection
 
 **Checkpoint**: User Story 3 complete - all filtering and JSON output work
 
