@@ -51,8 +51,11 @@ A Rust CLI tool that follows Unix philosophy—do one thing well. It reads your 
 ## Quick Start
 
 ```bash
-# Install from crates.io
-cargo install claude-list
+# Install via Homebrew (macOS)
+brew tap elliotxx/tap && brew install elliotxx/tap/claude-list
+
+# OR via shell script (Linux/macOS)
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elliotxx/claude-list/releases/latest/download/claude-list-installer.sh | sh
 
 # View your Claude Code environment
 claude-list
@@ -157,25 +160,31 @@ PLUGINS    3 installed
 
 ## Installation
 
-### Option 1: From crates.io (Recommended)
-
-```bash
-cargo install claude-list
-```
-
-### Option 2: From npm
-
-```bash
-npm install -g @elliotxx/claude-list
-```
-
-### Option 3: From Homebrew (macOS)
+### Option 1: From Homebrew (macOS)
 
 ```bash
 brew tap elliotxx/tap && brew install elliotxx/tap/claude-list
 ```
 
-### Option 4: From GitHub Releases
+### Option 2: From Shell Script (Linux/macOS)
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elliotxx/claude-list/releases/latest/download/claude-list-installer.sh | sh
+```
+
+### Option 3: From npm
+
+```bash
+npm install -g @elliotxx/claude-list
+```
+
+### Option 4: From crates.io
+
+```bash
+cargo install claude-list
+```
+
+### Option 5: From GitHub Releases
 
 Download pre-built binaries from [GitHub Releases](https://github.com/elliotxx/claude-list/releases):
 
@@ -191,7 +200,7 @@ tar -xzf claude-list-aarch64-apple-darwin.tar.gz
 ./claude-list
 ```
 
-### Option 5: From Source
+### Option 6: From Source
 
 ```bash
 git clone https://github.com/elliotxx/claude-list.git
