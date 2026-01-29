@@ -166,7 +166,7 @@ cargo install claude-list
 ### Option 2: From npm
 
 ```bash
-npm install -g claude-list
+npm install -g @elliotxx/claude-list
 ```
 
 ### Option 3: From Homebrew (macOS)
