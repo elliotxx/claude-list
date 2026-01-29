@@ -330,9 +330,7 @@ fn test_short_l_flag_for_detailed_output() {
     let claude_dir = create_mock_claude_dir(&dir);
 
     let mut cmd = Command::cargo_bin("claude-list").unwrap();
-    cmd.arg("--config")
-        .arg(claude_dir)
-        .arg("-l");
+    cmd.arg("--config").arg(claude_dir).arg("-l");
 
     // -l should not cause an error, it should enable detailed output
     let output = cmd.output().unwrap();
