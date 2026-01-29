@@ -13,6 +13,7 @@ pub struct ClaudeInfo {
     pub mcp_servers: Vec<McpInfo>,
     pub hooks: Vec<HookInfo>,
     pub agents: Vec<AgentInfo>,
+    pub commands: Vec<CommandInfo>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -74,5 +75,14 @@ pub struct HookInfo {
 pub struct AgentInfo {
     pub name: String,
     pub description: Option<String>,
+    pub path: PathBuf,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CommandInfo {
+    pub name: String,
+    pub description: Option<String>,
+    pub allowed_tools: Option<String>,
+    pub argument_hint: Option<String>,
     pub path: PathBuf,
 }

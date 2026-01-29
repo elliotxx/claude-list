@@ -28,6 +28,8 @@ pub struct Args {
     pub hooks: bool,
     #[arg(long)]
     pub agents: bool,
+    #[arg(long)]
+    pub commands: bool,
 
     /// Output in JSON format
     #[arg(long)]

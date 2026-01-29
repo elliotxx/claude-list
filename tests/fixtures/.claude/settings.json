@@ -1,0 +1,12 @@
+{
+  "installed_plugins": [
+    {
+      "name": "context7",
+      "version": "2.1.0"
+    },
+    {
+      "name": "plugin_playwright",
+      "version": "1.0.0"
+    }
+  ]
+}

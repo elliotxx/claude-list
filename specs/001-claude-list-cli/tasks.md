@@ -19,9 +19,9 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize Rust project with Cargo and create directory structure
-- [ ] T002 [P] Configure Cargo.toml with dependencies (clap, serde, anyhow)
-- [ ] T003 [P] Configure Rust toolchain (rust-version 1.75+) and CI/CD
+- [x] T001 Initialize Rust project with Cargo and create directory structure
+- [x] T002 [P] Configure Cargo.toml with dependencies (clap, serde, anyhow)
+- [x] T003 [P] Configure Rust toolchain (rust-version 1.75+) and CI/CD
 
 ---
 
@@ -31,11 +31,11 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create data structures in src/info.rs (ClaudeInfo, Item, ItemKind, Source)
-- [ ] T005 [P] Create error types in src/error.rs (ParseError, Display impls)
-- [ ] T006 Create CLI arguments struct in src/cli.rs (Args struct with clap derive)
-- [ ] T007 [P] Create lib.rs with module declarations and re-exports
-- [ ] T008 Create main.rs entry point with error handling wrapper
+- [x] T004 Create data structures in src/info.rs (ClaudeInfo, Item, ItemKind, Source)
+- [x] T005 [P] Create error types in src/error.rs (ParseError, Display impls)
+- [x] T006 Create CLI arguments struct in src/cli.rs (Args struct with clap derive)
+- [x] T007 [P] Create lib.rs with module declarations and re-exports
+- [x] T008 Create main.rs entry point with error handling wrapper
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -56,17 +56,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create plugins parser in src/parsers/plugins.rs
-- [ ] T012 [P] [US1] Create skills parser in src/parsers/skills.rs
-- [ ] T013 [P] [US1] Create sessions parser in src/parsers/sessions.rs
-- [ ] T014 [P] [US1] Create mcp parser in src/parsers/mcp.rs
-- [ ] T015 [P] [US1] Create hooks parser in src/parsers/hooks.rs
-- [ ] T016 [P] [US1] Create agents parser in src/parsers/agents.rs
-- [ ] T017 [P] [US1] Create parsers module in src/parsers/mod.rs
-- [ ] T018 [P] [US1] Create compact formatter in src/formatters/compact.rs
-- [ ] T019 [US1] Create formatters module in src/formatters/mod.rs
-- [ ] T020 [US1] Implement main parsing logic (aggregate all parsers, filter empty groups)
-- [ ] T021 [US1] Connect CLI args to parser execution and compact formatter
+- [x] T011 [P] [US1] Create plugins parser in src/parsers/plugins.rs
+- [x] T012 [P] [US1] Create skills parser in src/parsers/skills.rs
+- [x] T013 [P] [US1] Create sessions parser in src/parsers/sessions.rs
+- [x] T014 [P] [US1] Create mcp parser in src/parsers/mcp.rs
+- [x] T015 [P] [US1] Create hooks parser in src/parsers/hooks.rs
+- [x] T016 [P] [US1] Create agents parser in src/parsers/agents.rs
+- [x] T017 [P] [US1] Create parsers module in src/parsers/mod.rs
+- [x] T018 [P] [US1] Create compact formatter in src/formatters/compact.rs
+- [x] T019 [US1] Create formatters module in src/formatters/mod.rs
+- [x] T020 [US1] Implement main parsing logic (aggregate all parsers, filter empty groups)
+- [x] T021 [US1] Connect CLI args to parser execution and compact formatter
 
 **Checkpoint**: User Story 1 complete - basic `claude-list` works
 
@@ -131,8 +131,8 @@
 - [ ] T037 [P] Add unit tests for parsers in tests/unit/
 - [ ] T038 Create test fixtures in tests/fixtures/.claude/ with mock data
 - [ ] T039 Add performance validation (ensure <2 seconds execution)
-- [ ] T040 [P] Documentation updates: update CLAUDE.md, add usage examples
-- [ ] T041 Run cargo fmt, cargo clippy, and fix any warnings
+- [ ] T040 [P] Documentation updates: update CLAUDE.md
+- [ ] T041 Run cargo fmt, cargo clip, add usage examplespy, and fix any warnings
 
 ---
 
