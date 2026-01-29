@@ -13,38 +13,45 @@ homepage = "https://github.com/elliotxx/claude-list"
 repository = "https://github.com/elliotxx/claude-list"
 license = "MIT"
 
-[ci]
-github = { artifacts = true }
+# cargo-dist configuration
+[workspace.metadata.dist]
+# CI backends to support
+ci = ["github"]
+
+# Target platforms to build for
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+]
+
+# Installers to generate
+installers = ["shell", "powershell"]
+
+# Generate checksums
+checksum = ["sha256"]
+
+# Publish jobs to run in CI
+publish-jobs = ["crates-io"]
+
+# Release tag format
+tag-name = "v{{version}}"
+
+# Allow dirty git state
+allow-dirty = false
+
+# PR behavior
+pr-run-mode = "plan"
 
 # Pin GitHub Actions to specific commits for reproducible builds
-[dist.github-action-commits]
+[workspace.metadata.dist.github-action-commits]
 actions/checkout = "11bd71901bbe5b1630ceea73d27597364c9af683"
 actions/upload-artifact = "4a6f16e7d1c1a2c2b4d5e3c7e5a8f0d9b6c4e2a8"
 actions/download-artifact = "9c19b2e96b6421fb4a4a9e9e2d1b5c8e7f3a2b1c"
 
-[dist]
 # Build profile with optimizations for distribution
 [profile.dist]
 inherits = "release"
 lto = "thin"
 opt-level = 3
 strip = true
-
-# Target platforms to build for
-[targets]
-x86_64-unknown-linux-gnu = { os = "linux", arch = "x86_64" }
-x86_64-apple-darwin = { os = "macos", arch = "x86_64" }
-aarch64-apple-darwin = { os = "macos", arch = "aarch64" }
-
-# Installers to generate
-[installers]
-shell = {}
-powershell = {}
-
-# Generate checksums
-[checksum]
-algorithms = ["sha256"]
-
-# Release configuration
-[release]
-tag-name = "v{{version}}"
