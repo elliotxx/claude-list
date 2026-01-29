@@ -204,12 +204,6 @@ cargo install --path .
 
 ## Architecture
 
-### System Overview
-
-<div align="center">
-  <img src="https://via.placeholder.com/750x400?text=claude-list+Architecture" alt="Architecture Diagram" width="750">
-</div>
-
 ### Component Architecture
 
 ```
