@@ -17,28 +17,28 @@
 
 #### Research
 
-- [ ] T001 [P1] [US1] Research: anstyle crate usage and API surface @research.md
-- [ ] T002 [P1] [US1] Research: TTY detection with std::io::IsTerminal @research.md
+- [x] T001 [P1] [US1] Research: anstyle crate usage and API surface @research.md
+- [x] T002 [P1] [US1] Research: TTY detection with std::io::IsTerminal @research.md
 
 #### Dependencies
 
-- [ ] T003 [P1] [US1] Dependency: Add anstyle to Cargo.toml @Cargo.toml
+- [x] T003 [P1] [US1] Dependency: Add anstyle to Cargo.toml @Cargo.toml
 
 #### Implementation
 
-- [ ] T004 [P1] [US1] Create: Color utilities module with constants @src/output.rs
-- [ ] T005 [P1] [US1] Create: ColorSettings struct for TTY/NO_COLOR detection @src/output.rs
-- [ ] T006 [P1] [US1] Create: ColorScheme struct mapping types to colors @src/output.rs
-- [ ] T007 [P1] [US1] Modify: Add --no-color flag to CLI @src/cli.rs
-- [ ] T008 [P1] [US1] Modify: Integrate color settings into main.rs @src/main.rs
-- [ ] T009 [P1] [US1] Modify: Add color output to compact formatter @src/formatters/compact.rs
-- [ ] T010 [P1] [US1] Modify: Add color output to detailed formatter @src/formatters/detailed.rs
+- [x] T004 [P1] [US1] Create: Color utilities module with constants @src/output.rs
+- [x] T005 [P1] [US1] Create: ColorSettings struct for TTY/NO_COLOR detection @src/output.rs
+- [x] T006 [P1] [US1] Create: ColorScheme struct mapping types to colors @src/output.rs
+- [x] T007 [P1] [US1] Modify: Add --no-color flag to CLI @src/cli.rs
+- [x] T008 [P1] [US1] Modify: Integrate color settings into main.rs @src/main.rs
+- [x] T009 [P1] [US1] Modify: Add color output to compact formatter @src/formatters/compact.rs
+- [x] T010 [P1] [US1] Modify: Add color output to detailed formatter @src/formatters/detailed.rs
 
 #### Tests
 
-- [ ] T011 [P1] [US1] Test: Unit tests for ColorSettings (TTY detection, NO_COLOR) @src/output.rs
-- [ ] T012 [P1] [US1] Test: Integration test: colored output in terminal @tests/cli_test.rs
-- [ ] T013 [P1] [US1] Test: Integration test: --no-color disables colors @tests/cli_test.rs
+- [x] T011 [P1] [US1] Test: Unit tests for ColorSettings (TTY detection, NO_COLOR) @src/output.rs
+- [x] T012 [P1] [US1] Test: Integration test: colored output in terminal @tests/cli_test.rs
+- [x] T013 [P1] [US1] Test: Integration test: --no-color disables colors @tests/cli_test.rs
 
 **Checkpoint**: US1 complete - `claude-list` shows colors, `claude-list --no-color` shows plain text
 
@@ -50,20 +50,20 @@
 
 #### Implementation
 
-- [ ] T014 [P1] [US2] Create: SearchFilter struct in filter.rs @src/parsers/filter.rs
-- [ ] T015 [P1] [US2] Create: Case-insensitive matching logic @src/parsers/filter.rs
-- [ ] T016 [P1] [US2] Modify: Add --search argument to CLI @src/cli.rs
+- [x] T014 [P1] [US2] Create: SearchFilter struct in parsers/mod.rs @src/parsers/mod.rs
+- [x] T015 [P1] [US2] Create: Case-insensitive matching logic @src/parsers/mod.rs
+- [x] T016 [P1] [US2] Modify: Add --search argument to CLI @src/cli.rs
 
 #### Integration
 
-- [ ] T017 [P1] [US2] Modify: Connect search filter to main loop @src/main.rs
-- [ ] T018 [P1] [US2] Modify: Update compact formatter for empty search results @src/formatters/compact.rs
+- [x] T017 [P1] [US2] Modify: Connect search filter to main loop @src/main.rs
+- [x] T018 [P1] [US2] Modify: Update compact formatter for empty search results @src/formatters/compact.rs
 
 #### Tests
 
-- [ ] T019 [P1] [US2] Test: Unit tests for SearchFilter matching @src/parsers/filter.rs
-- [ ] T020 [P1] [US2] Test: Integration test: single keyword search @tests/cli_test.rs
-- [ ] T021 [P1] [US2] Test: Integration test: empty search result message @tests/cli_test.rs
+- [x] T019 [P1] [US2] Test: Unit tests for SearchFilter matching @src/parsers/mod.rs
+- [x] T020 [P1] [US2] Test: Integration test: single keyword search @tests/cli_test.rs
+- [x] T021 [P1] [US2] Test: Integration test: empty search result message @tests/cli_test.rs
 
 **Checkpoint**: US2 complete - `claude-list --search context` only shows matching components
 
@@ -75,13 +75,13 @@
 
 #### Implementation
 
-- [ ] T022 [P1] [US3] Create: Multi-keyword parsing (split by whitespace) @src/parsers/filter.rs
-- [ ] T023 [P1] [US3] Create: AND matching logic (all keywords must match) @src/parsers/filter.rs
+- [x] T022 [P1] [US3] Create: Multi-keyword parsing (split by whitespace) @src/parsers/mod.rs
+- [x] T023 [P1] [US3] Create: AND matching logic (all keywords must match) @src/parsers/mod.rs
 
 #### Tests
 
-- [ ] T024 [P1] [US3] Test: Unit tests for multi-keyword AND logic @src/parsers/filter.rs
-- [ ] T025 [P1] [US3] Test: Integration test: multi-keyword AND search @tests/cli_test.rs
+- [x] T024 [P1] [US3] Test: Unit tests for multi-keyword AND logic @src/parsers/mod.rs
+- [x] T025 [P1] [US3] Test: Integration test: multi-keyword AND search @tests/cli_test.rs
 
 **Checkpoint**: US3 complete - `claude-list --search "context plugin"` shows only components matching both
 
@@ -91,13 +91,13 @@
 
 #### Integration
 
-- [ ] T026 [P1] [US1+US2+US3] Integration: Ensure detailed output (-l) supports search and colors @src/formatters/detailed.rs
-- [ ] T027 [P1] [US1+US2+US3] Integration: End-to-end test with colors + search + filters @tests/cli_test.rs
+- [x] T026 [P1] [US1+US2+US3] Integration: Ensure detailed output (-l) supports search and colors @src/formatters/detailed.rs
+- [x] T027 [P1] [US1+US2+US3] Integration: End-to-end test with colors + search + filters @tests/cli_test.rs
 
 #### Performance Validation
 
-- [ ] T028 [P1] [ALL] Benchmark: Validate search < 100ms for 100+ components @tests/
-- [ ] T029 [P1] [ALL] Benchmark: Validate color rendering < 5ms @tests/
+- [x] T028 [P1] [ALL] Benchmark: Validate search < 100ms for 100+ components @tests/
+- [x] T029 [P1] [ALL] Benchmark: Validate color rendering < 5ms @tests/
 
 **Checkpoint**: All P1 complete - core colored output and search features working
 
@@ -111,8 +111,8 @@
 
 #### Implementation
 
-- [ ] T030 [P2] [US4] Verify: Search already combines with existing filters via FilterFlags @src/parsers/filter.rs
-- [ ] T031 [P2] [US4] Test: Integration test: search + filter combination @tests/cli_test.rs
+- [x] T030 [P2] [US4] Verify: Search already combines with existing filters via FilterFlags @src/parsers/mod.rs
+- [x] T031 [P2] [US4] Test: Integration test: search + filter combination @tests/cli_test.rs
 
 **Checkpoint**: US4 complete - `claude-list --search context --plugins` works as expected
 
@@ -124,13 +124,13 @@
 
 #### Implementation
 
-- [ ] T032 [P2] [US5] Create: NO_COLOR environment variable handling @src/output.rs
-- [ ] T033 [P2] [US5] Create: Auto-disable colors for non-TTY output @src/output.rs
+- [x] T032 [P2] [US5] Create: NO_COLOR environment variable handling @src/output.rs
+- [x] T033 [P2] [US5] Create: Auto-disable colors for non-TTY output @src/output.rs
 
 #### Tests
 
-- [ ] T034 [P2] [US5] Test: Integration test: NO_COLOR=1 disables colors @tests/cli_test.rs
-- [ ] T035 [P2] [US5] Test: Integration test: piped output has no colors @tests/cli_test.rs
+- [x] T034 [P2] [US5] Test: Integration test: NO_COLOR=1 disables colors @tests/cli_test.rs
+- [x] T035 [P2] [US5] Test: Integration test: piped output has no colors @tests/cli_test.rs
 
 **Checkpoint**: US5 complete - environment-based color control working
 
@@ -138,30 +138,29 @@
 
 ## P2: Documentation
 
-- [ ] T036 [P2] Update: Quickstart.md examples @specs/002-colored-output-search/quickstart.md
-- [ ] T037 [P2] Create: CHANGELOG.md entry for v0.1.2 @CHANGELOG.md
+- [x] T036 [P2] Update: Quickstart.md examples @specs/002-colored-output-search/quickstart.md
+- [x] T037 [P2] Create: CHANGELOG.md entry for v0.1.2 @CHANGELOG.md
 
 ---
 
 ## Release
 
-- [ ] T038 [P] Version: Bump version to 0.1.2 @Cargo.toml
-- [ ] T039 [P] Release: Create GitHub release @.github/workflows/release.yml
+- [x] T038 [P] Version: Bump version to 0.1.2 @Cargo.toml
+- [x] T039 [P] Release: Create GitHub release @.github/workflows/release.yml
 
 ---
 
 ## Summary
 
-| Priority | Stories | Tasks | Description |
-|----------|---------|-------|-------------|
-| P1 | US1, US2, US3 | T001-T029 | Core: colors + search |
-| P2 | US4, US5 | T030-T037 | Enhanced: filters + env |
-| Release | - | T038-T039 | Version bump + release |
+| Priority | Stories | Tasks | Description | Status |
+|----------|---------|-------|-------------|--------|
+| P1 | US1, US2, US3 | T001-T029 | Core: colors + search | ✅ Complete |
+| P2 | US4, US5 | T030-T037 | Enhanced: filters + env | ✅ Complete |
+| Release | - | T038-T039 | Version bump + release | ✅ Complete |
 
 **Total Tasks**: 39
-**P1 Tasks**: 29
-**P2 Tasks**: 8
-**Release Tasks**: 2
+**Completed**: 39
+**Remaining**: 0
 
 ---
 
