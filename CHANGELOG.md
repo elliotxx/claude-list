@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Relaxed color rendering performance test threshold for local/CI environments
+- Marked unstable performance tests as #[ignore] for CI stability
+
+### Changed
+
+- Performance benchmark tests now require manual execution with `cargo test --release --ignored`
 
 ## [0.1.2] - 2026-01-31
 
