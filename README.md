@@ -28,10 +28,10 @@
 
 ## Latest News 🔥
 
+- **[2026/01]** Released v0.1.2 with colored output and search functionality
 - **[2026/01]** Released v0.1.1 with `-l` flag support and npm package
 - **[2026/01]** Published to crates.io - now installable via `cargo install claude-list`
 - **[2026/01]** Added Homebrew support with cargo-dist multi-platform builds
-- **[2026/01]** Released v0.1.0 with compact, detailed, and JSON output modes
 
 ---
 
@@ -71,9 +71,42 @@ claude-list
 
 | Mode | Command | Description |
 |------|---------|-------------|
-| Compact | `claude-list` | Summary with counts |
+| Compact | `claude-list` | Summary with counts (colored by type) |
 | Detailed | `claude-list -l` | Full info with version, source, path |
 | JSON | `claude-list --json` | Machine-readable output |
+
+### Colored Output
+
+Components are displayed with distinct colors for easy identification:
+
+| Component Type | Color |
+|----------------|-------|
+| Plugins | Blue |
+| Skills | Green |
+| MCP Servers | Yellow |
+| Hooks | Magenta |
+| Agents | Red |
+| Commands | Orange |
+
+Colors are automatically disabled when:
+- Using `--no-color` flag
+- `NO_COLOR` environment variable is set
+- Output is piped or redirected
+
+### Search
+
+Search for components by name with flexible matching:
+
+```bash
+# Single keyword (case-insensitive)
+claude-list --search context
+
+# Multiple keywords (AND logic - all must match)
+claude-list --search "context plugin"
+
+# Combine with filters
+claude-list --search api --plugins
+```
 
 ### Filtering
 
@@ -105,7 +138,7 @@ claude-list --config /path/to/.claude
 ### Compact Mode (Default)
 
 ```
-CLAUDE-LIST v0.1.1
+CLAUDE-LIST v0.1.2
 
 CONFIG: /Users/user/.claude
 
@@ -128,7 +161,7 @@ MCP        2 servers
 ### Detailed Mode (`-l`)
 
 ```
-CLAUDE-LIST v0.1.1
+CLAUDE-LIST v0.1.2
 
 CONFIG: /Users/user/.claude
 
@@ -144,7 +177,7 @@ PLUGINS    3 installed
 
 ```json
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "config_dir": "/Users/user/.claude",
   "plugins": [...],
   "skills": [...],
@@ -252,7 +285,7 @@ cargo install --path .
 ### Key Design Decisions
 
 - **Pattern Used**: Unix philosophy—single responsibility, compose simple tools
-- **Technology Stack**: Rust 1.75+, clap (CLI), serde (JSON), anyhow (error handling)
+- **Technology Stack**: Rust 1.75+, clap (CLI), serde (JSON), anyhow (error handling), anstyle (colors), unicode-width (ANSI width)
 - **Scalability**: Each parser is independent, easy to extend
 - **Error Handling**: Graceful degradation for missing files
 
@@ -335,13 +368,13 @@ Releases are automated via [cargo-dist](https://dist.clap.rs/):
 
 ```bash
 # 1. Update version in Cargo.toml
-# Edit Cargo.toml: version = "0.1.1" → "0.1.2"
+# Edit Cargo.toml: version = "0.1.2" → "0.1.3"
 
 # 2. Commit version change
-git add -A && git commit -m "chore: bump version to 0.1.2"
+git add -A && git commit -m "chore: bump version to 0.1.3"
 
 # 3. Create git tag
-git tag 0.1.2
+git tag 0.1.3
 
 # 4. Push to GitHub (including tags)
 git push && git push --tags
