@@ -442,7 +442,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 <div align="center">
   <p>
-    <strong>Built with ❤️ for the Claude Code community</strong><br>
-    <sub>Parse and display your Claude Code environment</sub>
+    <strong>Built with ❤️ for elliotxx</strong><br>
+    <sub>Parse and display your Claude Code Info</sub>
   </p>
 </div>
