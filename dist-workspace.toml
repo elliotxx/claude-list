@@ -21,3 +21,5 @@ publish-jobs = ["homebrew", "npm"]
 install-updater = false
 # Path that installers should place binaries in
 install-path = "CARGO_HOME"
+# Custom release title (only version number)
+announcement-title = "claude-list {{version}}"
