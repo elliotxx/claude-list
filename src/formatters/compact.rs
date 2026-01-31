@@ -1,9 +1,15 @@
 //! Compact output formatter
 
 use crate::info::ClaudeInfo;
+use crate::output::{colored_string, ColorScheme, ColorSettings, ComponentType};
 use std::io::Write;
 
-pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Result<()> {
+pub fn format_compact(
+    info: &ClaudeInfo,
+    color_scheme: &ColorScheme,
+    color_settings: &ColorSettings,
+    output: &mut dyn Write,
+) -> std::io::Result<()> {
     writeln!(output, "CLAUDE-LIST v{}", info.version)?;
     writeln!(output)?;
     writeln!(output, "CONFIG: {}", info.config_dir.display())?;
@@ -13,7 +19,8 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     if !info.plugins.is_empty() {
         writeln!(output, "PLUGINS    {} installed", info.plugins.len())?;
         for plugin in &info.plugins {
-            writeln!(output, "  {}", plugin.name)?;
+            let colored = colored_string(&plugin.name, ComponentType::Plugin, color_scheme, color_settings);
+            writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
     }
@@ -22,7 +29,8 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     if !info.skills.is_empty() {
         writeln!(output, "SKILLS     {} available", info.skills.len())?;
         for skill in &info.skills {
-            writeln!(output, "  {}", skill.name)?;
+            let colored = colored_string(&skill.name, ComponentType::Skill, color_scheme, color_settings);
+            writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
     }
@@ -37,7 +45,8 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     if !info.mcp_servers.is_empty() {
         writeln!(output, "MCP        {} servers", info.mcp_servers.len())?;
         for mcp in &info.mcp_servers {
-            writeln!(output, " {}", mcp.name)?;
+            let colored = colored_string(&mcp.name, ComponentType::Mcp, color_scheme, color_settings);
+            writeln!(output, " {}", colored)?;
         }
         writeln!(output)?;
     }
@@ -46,7 +55,8 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     if !info.hooks.is_empty() {
         writeln!(output, "HOOKS      {} configured", info.hooks.len())?;
         for hook in &info.hooks {
-            writeln!(output, "  {}", hook.name)?;
+            let colored = colored_string(&hook.name, ComponentType::Hook, color_scheme, color_settings);
+            writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
     }
@@ -55,7 +65,8 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     if !info.agents.is_empty() {
         writeln!(output, "AGENTS     {} defined", info.agents.len())?;
         for agent in &info.agents {
-            writeln!(output, "  {}", agent.name)?;
+            let colored = colored_string(&agent.name, ComponentType::Agent, color_scheme, color_settings);
+            writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
     }
@@ -64,7 +75,8 @@ pub fn format_compact(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Res
     if !info.commands.is_empty() {
         writeln!(output, "COMMANDS   {} available", info.commands.len())?;
         for cmd in &info.commands {
-            writeln!(output, "  /{}", cmd.name)?;
+            let colored = colored_string(&cmd.name, ComponentType::Command, color_scheme, color_settings);
+            writeln!(output, "  /{}", colored)?;
         }
     }
 
@@ -105,8 +117,11 @@ mod tests {
             commands: vec![],
         };
 
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
         let mut buffer = Vec::new();
-        format_compact(&info, &mut buffer).unwrap();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
         let output = String::from_utf8(buffer).unwrap();
 
         assert!(output.contains("CLAUDE-LIST v0.1.0"));

@@ -15,6 +15,14 @@ pub struct Args {
     #[arg(long, value_enum)]
     pub output: Option<OutputMode>,
 
+    /// Disable colored output
+    #[arg(long)]
+    pub no_color: bool,
+
+    /// Search component names (supports multiple keywords with AND)
+    #[arg(short, long, value_name = "QUERY")]
+    pub search: Option<String>,
+
     /// Show detailed output with version, source, and path information
     #[arg(short = 'l', long = "long")]
     pub detailed: bool,

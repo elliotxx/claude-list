@@ -171,7 +171,7 @@ claude-list --search api --skills
 3. Use single quotes to preserve spaces:
    ```bash
    claude-list --search "context plugin"  # Correct
-   claaude-list --search context plugin   # Wrong - only first word used
+   claude-list --search context plugin   # Wrong - only first word used
    ```
 
 ## Performance

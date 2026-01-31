@@ -1,9 +1,15 @@
 //! Detailed output formatter (for -l flag)
 
 use crate::info::ClaudeInfo;
+use crate::output::{ColorScheme, ColorSettings, ComponentType, Alignment, write_colored_padded_field};
 use std::io::Write;
 
-pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Result<()> {
+pub fn format_detailed(
+    info: &ClaudeInfo,
+    color_scheme: &ColorScheme,
+    color_settings: &ColorSettings,
+    output: &mut dyn Write,
+) -> std::io::Result<()> {
     writeln!(output, "CLAUDE-LIST v{}", info.version)?;
     writeln!(output)?;
     writeln!(output, "CONFIG: {}", info.config_dir.display())?;
@@ -14,15 +20,15 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
         writeln!(output, "PLUGINS    {} installed", info.plugins.len())?;
         writeln!(
             output,
-            "  {:<24} {:>10} {:>12} PATH",
+            "  {:<30} {:>18} {:<15} PATH",
             "NAME", "VERSION", "SOURCE"
         )?;
         writeln!(
             output,
-            "  {:<24} {:>10} {:>12} {}",
-            "-".repeat(24),
-            "-".repeat(10),
-            "-".repeat(12),
+            "  {:<30} {:>18} {:<15} {}",
+            "-".repeat(30),
+            "-".repeat(18),
+            "-".repeat(15),
             "-".repeat(30)
         )?;
         for plugin in &info.plugins {
@@ -31,14 +37,13 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
                 crate::info::Source::Official => "official",
                 crate::info::Source::ThirdParty => "third-party",
             };
-            writeln!(
-                output,
-                "  {:<24} {:>10} {:>12} {}",
-                plugin.name,
-                version,
-                source,
-                plugin.path.display()
-            )?;
+            write!(output, "  ")?;
+            write_colored_padded_field(output, &plugin.name, ComponentType::Plugin, color_scheme, color_settings, 30, Alignment::Left)?;
+            write_colored_padded_field(output, version, ComponentType::Version, color_scheme, color_settings, 18, Alignment::Right)?;
+            write!(output, " ")?;
+            write_colored_padded_field(output, source, ComponentType::Plugin, color_scheme, color_settings, 15, Alignment::Left)?;
+            write!(output, " {}", plugin.path.display())?;
+            writeln!(output)?;
         }
         writeln!(output)?;
     }
@@ -48,15 +53,15 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
         writeln!(output, "SKILLS     {} available", info.skills.len())?;
         writeln!(
             output,
-            "  {:<24} {:>10} {:>12} PATH",
+            "  {:<30} {:>18} {:<15} PATH",
             "NAME", "VERSION", "SOURCE"
         )?;
         writeln!(
             output,
-            "  {:<24} {:>10} {:>12} {}",
-            "-".repeat(24),
-            "-".repeat(10),
-            "-".repeat(12),
+            "  {:<30} {:>18} {:<15} {}",
+            "-".repeat(30),
+            "-".repeat(18),
+            "-".repeat(15),
             "-".repeat(30)
         )?;
         for skill in &info.skills {
@@ -65,14 +70,13 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
                 crate::info::Source::Official => "official",
                 crate::info::Source::ThirdParty => "third-party",
             };
-            writeln!(
-                output,
-                "  {:<24} {:>10} {:>12} {}",
-                skill.name,
-                version,
-                source,
-                skill.path.display()
-            )?;
+            write!(output, "  ")?;
+            write_colored_padded_field(output, &skill.name, ComponentType::Skill, color_scheme, color_settings, 30, Alignment::Left)?;
+            write_colored_padded_field(output, version, ComponentType::Version, color_scheme, color_settings, 18, Alignment::Right)?;
+            write!(output, " ")?;
+            write_colored_padded_field(output, source, ComponentType::Skill, color_scheme, color_settings, 15, Alignment::Left)?;
+            write!(output, " {}", skill.path.display())?;
+            writeln!(output)?;
         }
         writeln!(output)?;
     }
@@ -89,18 +93,19 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
     // MCP
     if !info.mcp_servers.is_empty() {
         writeln!(output, "MCP        {} servers", info.mcp_servers.len())?;
-        writeln!(output, "  {:<24} {:>12} PATH", "NAME", "STATUS")?;
+        writeln!(output, "  {:<30} {:<18} PATH", "NAME", "STATUS")?;
         writeln!(
             output,
-            "  {:<24} {:>12} {}",
-            "-".repeat(24),
-            "-".repeat(12),
+            "  {:<30} {:<18} {}",
+            "-".repeat(30),
+            "-".repeat(18),
             "-".repeat(30)
         )?;
         for mcp in &info.mcp_servers {
+            // Name not colored to maintain alignment
             writeln!(
                 output,
-                "  {:<24} {:>12} {}",
+                "  {:<30} {:<18} {}",
                 mcp.name,
                 mcp.status,
                 mcp.path.display()
@@ -112,18 +117,19 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
     // HOOKS
     if !info.hooks.is_empty() {
         writeln!(output, "HOOKS      {} configured", info.hooks.len())?;
-        writeln!(output, "  {:<24} {:>12} PATH", "NAME", "TYPE")?;
+        writeln!(output, "  {:<30} {:<18} PATH", "NAME", "TYPE")?;
         writeln!(
             output,
-            "  {:<24} {:>12} {}",
-            "-".repeat(24),
-            "-".repeat(12),
+            "  {:<30} {:<18} {}",
+            "-".repeat(30),
+            "-".repeat(18),
             "-".repeat(30)
         )?;
         for hook in &info.hooks {
+            // Name not colored to maintain alignment
             writeln!(
                 output,
-                "  {:<24} {:>12} {}",
+                "  {:<30} {:<18} {}",
                 hook.name,
                 hook.hook_type,
                 hook.path.display()
@@ -135,11 +141,12 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
     // AGENTS
     if !info.agents.is_empty() {
         writeln!(output, "AGENTS     {} defined", info.agents.len())?;
-        writeln!(output, "  {:<24} DESCRIPTION", "NAME")?;
-        writeln!(output, "  {:<24} {}", "-".repeat(24), "-".repeat(50))?;
+        writeln!(output, "  {:<30} DESCRIPTION", "NAME")?;
+        writeln!(output, "  {:<30} {}", "-".repeat(30), "-".repeat(50))?;
         for agent in &info.agents {
             let desc = agent.description.as_deref().unwrap_or("-");
-            writeln!(output, "  {:<24} {}", agent.name, desc)?;
+            // Name not colored to maintain alignment
+            writeln!(output, "  {:<30} {}", agent.name, desc)?;
         }
         writeln!(output)?;
     }
@@ -147,11 +154,12 @@ pub fn format_detailed(info: &ClaudeInfo, output: &mut dyn Write) -> std::io::Re
     // COMMANDS
     if !info.commands.is_empty() {
         writeln!(output, "COMMANDS   {} available", info.commands.len())?;
-        writeln!(output, "  {:<24} DESCRIPTION", "NAME")?;
-        writeln!(output, "  {:<24} {}", "-".repeat(24), "-".repeat(50))?;
+        writeln!(output, "  {:<30} DESCRIPTION", "NAME")?;
+        writeln!(output, "  {:<30} {}", "-".repeat(30), "-".repeat(50))?;
         for cmd in &info.commands {
             let desc = cmd.description.as_deref().unwrap_or("-");
-            writeln!(output, "  /{:<23} {}", cmd.name, desc)?;
+            // Name not colored to maintain alignment
+            writeln!(output, "  /{:<29} {}", cmd.name, desc)?;
         }
     }
 
@@ -197,8 +205,11 @@ mod tests {
             commands: vec![],
         };
 
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
         let mut buffer = Vec::new();
-        format_detailed(&info, &mut buffer).unwrap();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
         let output = String::from_utf8(buffer).unwrap();
 
         // Verify detailed format includes version and source

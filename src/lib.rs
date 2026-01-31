@@ -4,4 +4,5 @@ pub mod cli;
 pub mod error;
 pub mod formatters;
 pub mod info;
+pub mod output;
 pub mod parsers;

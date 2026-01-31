@@ -7,7 +7,8 @@ use std::process;
 use claude_list::cli::{Args, OutputMode};
 use claude_list::formatters::compact::format_compact;
 use claude_list::formatters::detailed::format_detailed;
-use claude_list::parsers::{filter_components, parse_all, FilterFlags};
+use claude_list::output::{ColorScheme, ColorSettings};
+use claude_list::parsers::{filter_components, parse_all, FilterFlags, SearchFilter};
 
 fn main() {
     if let Err(e) = run() {
@@ -37,6 +38,16 @@ fn run() -> Result<()> {
     // Parse all components
     let info = parse_all(config_dir)?;
 
+    // Create search filter
+    let search_filter = args.search.as_ref().map(|q| SearchFilter::new(q));
+
+    // Create color settings (respect --no-color flag)
+    let mut color_settings = ColorSettings::from_env();
+    if args.no_color {
+        color_settings = ColorSettings { enabled: false, force_colors: false };
+    }
+    let color_scheme = ColorScheme::default();
+
     // Filter based on flags
     let filters = FilterFlags {
         plugins: args.plugins,
@@ -46,6 +57,7 @@ fn run() -> Result<()> {
         hooks: args.hooks,
         agents: args.agents,
         commands: args.commands,
+        search: search_filter,
     };
     let info = filter_components(info, filters);
 
@@ -62,11 +74,11 @@ fn run() -> Result<()> {
         };
         match mode {
             OutputMode::Compact => {
-                format_compact(&info, &mut std::io::stdout())?;
+                format_compact(&info, &color_scheme, &color_settings, &mut std::io::stdout())?;
             }
             OutputMode::Detailed => {
                 // Detailed format: shows version, source, path
-                format_detailed(&info, &mut std::io::stdout())?;
+                format_detailed(&info, &color_scheme, &color_settings, &mut std::io::stdout())?;
             }
         }
     }
