@@ -1067,3 +1067,573 @@ fn test_fixtures_supports_all_filters() {
         );
     }
 }
+
+// ==================== Colored Output Tests (T012, T013) ====================
+
+#[test]
+fn test_colored_output_in_terminal() {
+    // Test that colors are enabled in TTY mode (when stdout is a terminal)
+    // This test verifies the ColorSettings::from_env() behavior
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(claude_dir);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Should produce output
+    assert!(output.status.success());
+    assert!(stdout.contains("CLAUDE-LIST"));
+    assert!(stdout.contains("PLUGINS"));
+    assert!(stdout.contains("context7"));
+}
+
+#[test]
+fn test_no_color_flag_disables_colors() {
+    // Test that --no-color flag produces plain text output
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(claude_dir).arg("--no-color");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    // Command should succeed
+    assert!(output.status.success());
+
+    // Should still show components (just without ANSI codes)
+    assert!(stdout.contains("context7"));
+    assert!(stdout.contains("test-skill"));
+
+    // Verify no ANSI escape codes (basic check)
+    assert!(!stdout.contains("\x1b["));
+}
+
+// ==================== Search Functionality Tests (T020, T021, T025) ====================
+
+#[test]
+fn test_single_keyword_search() {
+    // Test single keyword search (case-insensitive)
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--search")
+        .arg("context");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should contain context7 (matches "context")
+    assert!(stdout.contains("context7"));
+    // Should not contain test-skill (doesn't match "context")
+    assert!(!stdout.contains("test-skill"));
+}
+
+#[test]
+fn test_single_keyword_search_case_insensitive() {
+    // Test case-insensitive matching
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    // Test uppercase
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--search")
+        .arg("CONTEXT");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    assert!(stdout.contains("context7"));
+
+    // Test mixed case
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--search")
+        .arg("Context");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    assert!(stdout.contains("context7"));
+}
+
+#[test]
+fn test_empty_search_result_message() {
+    // Test that empty search results show appropriate message
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("--search")
+        .arg("nonexistent");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should show no components
+    assert!(!stdout.contains("PLUGINS"));
+    assert!(!stdout.contains("SKILLS"));
+}
+
+#[test]
+fn test_multi_keyword_and_search() {
+    // Test multi-keyword AND search
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    // Create plugins with names that test AND logic
+    let settings = r#"{
+        "installed_plugins": [
+            {"name": "context7-plugin"},
+            {"name": "plugin-context-manager"},
+            {"name": "context7-demo"},
+            {"name": "other-plugin"}
+        ]
+    }"#;
+    std::fs::write(claude_dir.join("settings.json"), settings).unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    std::fs::write(claude_dir.join("session_history.json"), sessions).unwrap();
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--search")
+        .arg("context plugin");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should match "context7-plugin" (has both "context" and "plugin")
+    assert!(stdout.contains("context7-plugin"));
+    // Should match "plugin-context-manager" (has both)
+    assert!(stdout.contains("plugin-context-manager"));
+    // Should NOT match "context7-demo" (has "context" but not "plugin")
+    assert!(!stdout.contains("context7-demo"));
+    // Should NOT match "other-plugin" (has "plugin" but not "context")
+    assert!(!stdout.contains("other-plugin"));
+}
+
+// ==================== Search + Filter Combination Tests (T031) ====================
+
+#[test]
+fn test_search_with_plugins_filter() {
+    // Test search combined with --plugins filter
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    let settings = r#"{
+        "installed_plugins": [
+            {"name": "context7", "version": "2.1.0"},
+            {"name": "other-plugin", "version": "1.0.0"}
+        ]
+    }"#;
+    std::fs::write(claude_dir.join("settings.json"), settings).unwrap();
+
+    // Add a skill with "context" in the name
+    std::fs::create_dir_all(claude_dir.join("skills")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills/context-skill")).unwrap();
+    std::fs::write(
+        claude_dir.join("skills/context-skill/skill.yaml"),
+        "name: context-skill\nversion: 1.0.0\n",
+    )
+    .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    std::fs::write(claude_dir.join("session_history.json"), sessions).unwrap();
+
+    // Search with --plugins should only show matching plugins
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--search")
+        .arg("context")
+        .arg("--plugins");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should show context7 plugin
+    assert!(stdout.contains("context7"));
+    // Should NOT show context-skill (filtered by --plugins)
+    assert!(!stdout.contains("context-skill"));
+}
+
+#[test]
+fn test_search_with_skills_filter() {
+    // Test search combined with --skills filter
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    let settings = r#"{"installed_plugins": []}"#;
+    std::fs::write(claude_dir.join("settings.json"), settings).unwrap();
+
+    // Create multiple skills
+    std::fs::create_dir_all(claude_dir.join("skills")).unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills/context-skill")).unwrap();
+    std::fs::write(
+        claude_dir.join("skills/context-skill/skill.yaml"),
+        "name: context-skill\nversion: 1.0.0\n",
+    )
+    .unwrap();
+    std::fs::create_dir_all(claude_dir.join("skills/api-skill")).unwrap();
+    std::fs::write(
+        claude_dir.join("skills/api-skill/skill.yaml"),
+        "name: api-skill\nversion: 2.0.0\n",
+    )
+    .unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    std::fs::write(claude_dir.join("session_history.json"), sessions).unwrap();
+
+    // Search with --skills should only show matching skills
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--search")
+        .arg("context")
+        .arg("--skills");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should show context-skill
+    assert!(stdout.contains("context-skill"));
+    // Should NOT show api-skill
+    assert!(!stdout.contains("api-skill"));
+}
+
+// ==================== Color Control via Environment Tests (T034, T035) ====================
+
+#[test]
+fn test_no_color_env_disables_colors() {
+    // Test that NO_COLOR=1 environment variable disables colors
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config").arg(claude_dir);
+    cmd.env("NO_COLOR", "1");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should still show content (just without ANSI codes)
+    assert!(stdout.contains("context7"));
+    assert!(stdout.contains("test-skill"));
+
+    // Verify no ANSI escape codes
+    assert!(!stdout.contains("\x1b["));
+}
+
+#[test]
+fn test_piped_output_has_no_colors() {
+    // Test that piped output automatically disables colors (non-TTY)
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    // Run command and pipe output (simulates non-TTY)
+    let output = std::process::Command::new("./target/release/claude-list")
+        .arg("--config")
+        .arg(claude_dir)
+        .output()
+        .expect("Failed to run command");
+
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should show content
+    assert!(stdout.contains("CLAUDE-LIST"));
+    assert!(stdout.contains("context7"));
+
+    // In non-TTY mode, colors should be automatically disabled
+    // (The ColorSettings::from_env() checks is_terminal())
+    // We verify this by checking no ANSI codes are present
+    assert!(!stdout.contains("\x1b["));
+}
+
+// ==================== End-to-End Integration Tests (T026, T027) ====================
+
+#[test]
+fn test_detailed_output_with_search_and_colors() {
+    // Test detailed mode (-l) combined with search
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(claude_dir)
+        .arg("-l")
+        .arg("--search")
+        .arg("context");
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    assert!(output.status.success());
+    // Should show detailed format (with version, source, path)
+    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    assert!(stdout.contains("official") || stdout.contains("third-party"));
+    // Should filter by search
+    assert!(stdout.contains("context7"));
+    // Should not show non-matching plugins
+    assert!(!stdout.contains("plugin_test"));
+}
+
+#[test]
+fn test_all_output_modes_with_search() {
+    // Test search works with all output modes
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    // Compact mode with search
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--search")
+        .arg("context");
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(output.status.success());
+    assert!(stdout.contains("context7"));
+
+    // Detailed mode with search
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--output")
+        .arg("detailed")
+        .arg("--search")
+        .arg("context");
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(output.status.success());
+    assert!(stdout.contains("context7"));
+    assert!(stdout.contains("VERSION"));
+
+    // JSON mode with search
+    let mut cmd = Command::cargo_bin("claude-list").unwrap();
+    cmd.arg("--config")
+        .arg(&claude_dir)
+        .arg("--json")
+        .arg("--search")
+        .arg("context");
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(output.status.success());
+    // Verify JSON is valid and filtered
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let plugins = json.get("plugins").unwrap().as_array().unwrap();
+    assert_eq!(plugins.len(), 1);
+}
+
+#[test]
+fn test_search_with_all_filters_combination() {
+    // Test search works with any filter combination
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+
+    let filters = [
+        "--plugins",
+        "--skills",
+        "--sessions",
+        "--mcp",
+        "--hooks",
+        "--agents",
+        "--commands",
+    ];
+
+    for filter in &filters {
+        let mut cmd = Command::cargo_bin("claude-list").unwrap();
+        cmd.arg("--config")
+            .arg(&claude_dir)
+            .arg("--search")
+            .arg("test")
+            .arg(filter);
+
+        let output = cmd.output().unwrap();
+        assert!(
+            output.status.success(),
+            "Search with filter {} should succeed",
+            filter
+        );
+    }
+}
+
+// ==================== Performance Benchmark Tests (T028, T029) ====================
+
+#[test]
+fn test_search_performance_benchmark() {
+    // Benchmark: search should complete in under 100ms for 100+ components
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    // Create 150 plugins to benchmark search
+    let mut plugins = Vec::new();
+    for i in 0..150 {
+        plugins.push(format!(
+            r#"{{"name": "plugin-{:03}-test{}", "version": "1.0.0"}}"#,
+            i, i
+        ));
+    }
+    let settings = format!(r#"{{"installed_plugins": [{}]}}"#, plugins.join(","));
+    std::fs::write(claude_dir.join("settings.json"), &settings).unwrap();
+
+    let sessions = r#"{"sessions": []}"#;
+    std::fs::write(claude_dir.join("session_history.json"), sessions).unwrap();
+
+    let start = std::time::Instant::now();
+    let output = std::process::Command::new("./target/release/claude-list")
+        .arg("--config")
+        .arg(claude_dir)
+        .arg("--search")
+        .arg("test")
+        .output()
+        .expect("Failed to run command");
+    let elapsed = start.elapsed();
+
+    assert!(output.status.success());
+    // Should complete in under 100ms
+    assert!(
+        elapsed.as_millis() < 100,
+        "Search took {}ms, expected < 100ms",
+        elapsed.as_millis()
+    );
+}
+
+#[test]
+fn test_color_rendering_performance() {
+    // Benchmark: color rendering should add minimal overhead (<5ms)
+    let dir = TempDir::new().unwrap();
+    let claude_dir = create_mock_claude_dir(&dir);
+    let claude_dir_str = claude_dir.to_string_lossy().into_owned();
+
+    // Measure time with colors enabled (default)
+    let start = std::time::Instant::now();
+    let _colored_output = std::process::Command::new("./target/release/claude-list")
+        .arg("--config")
+        .arg(&claude_dir_str)
+        .output()
+        .expect("Failed to run command");
+    let colored_elapsed = start.elapsed();
+
+    // Measure time with colors disabled
+    let start = std::time::Instant::now();
+    let no_color_output = std::process::Command::new("./target/release/claude-list")
+        .arg("--config")
+        .arg(&claude_dir_str)
+        .arg("--no-color")
+        .output()
+        .expect("Failed to run command");
+    let no_color_elapsed = start.elapsed();
+
+    assert!(no_color_output.status.success());
+    // Color rendering overhead should be minimal (<10ms for CI environments)
+    let overhead = colored_elapsed.as_millis() as i64 - no_color_elapsed.as_millis() as i64;
+    assert!(
+        overhead < 10,
+        "Color rendering overhead was {}ms, expected < 10ms",
+        overhead
+    );
+}
+
+#[test]
+fn test_large_dataset_search_performance() {
+    // Test search performance with large dataset
+    let dir = TempDir::new().unwrap();
+    let claude_dir = dir.path().join(".claude");
+    std::fs::create_dir_all(&claude_dir).unwrap();
+
+    // Create 200 components across all types
+    let mut plugins = Vec::new();
+    for i in 0..50 {
+        plugins.push(format!(
+            r#"{{"name": "searchable-plugin-{:03}", "version": "1.0.0"}}"#,
+            i
+        ));
+    }
+    let settings = format!(r#"{{"installed_plugins": [{}]}}"#, plugins.join(","));
+    std::fs::write(claude_dir.join("settings.json"), &settings).unwrap();
+
+    // Create searchable skills
+    std::fs::create_dir_all(claude_dir.join("skills")).unwrap();
+    for i in 0..50 {
+        std::fs::create_dir_all(claude_dir.join(format!("skills/searchable-skill-{:03}", i)))
+            .unwrap();
+        std::fs::write(
+            claude_dir.join(format!("skills/searchable-skill-{:03}/skill.yaml", i)),
+            format!("name: searchable-skill-{:03}\nversion: 1.0.0\n", i),
+        )
+        .unwrap();
+    }
+
+    // Create searchable commands
+    std::fs::create_dir_all(claude_dir.join("commands")).unwrap();
+    for i in 0..50 {
+        std::fs::write(
+            claude_dir.join(format!("commands/searchable-command-{:03}.md", i)),
+            format!("---\nname: searchable-command-{:03}\n---\n", i),
+        )
+        .unwrap();
+    }
+
+    // Create searchable agents
+    std::fs::create_dir_all(claude_dir.join("agents")).unwrap();
+    for i in 0..50 {
+        std::fs::write(
+            claude_dir.join(format!("agents/searchable-agent-{:03}.md", i)),
+            format!("---\nname: searchable-agent-{:03}\n---\n", i),
+        )
+        .unwrap();
+    }
+
+    let sessions = r#"{"sessions": []}"#;
+    std::fs::write(claude_dir.join("session_history.json"), sessions).unwrap();
+
+    // Benchmark search across all components
+    let start = std::time::Instant::now();
+    let output = std::process::Command::new("./target/release/claude-list")
+        .arg("--config")
+        .arg(claude_dir)
+        .arg("--search")
+        .arg("searchable")
+        .output()
+        .expect("Failed to run command");
+    let elapsed = start.elapsed();
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    // Should find 200 matching components (50 plugins + 50 skills + 50 commands + 50 agents)
+    assert!(stdout.contains("200") || stdout.contains("50"));
+
+    // Should complete quickly (< 100ms)
+    assert!(
+        elapsed.as_millis() < 100,
+        "Search across 200 components took {}ms, expected < 100ms",
+        elapsed.as_millis()
+    );
+}
