@@ -64,6 +64,20 @@ git push --tags
 2. 确认 Release workflow 已触发
 3. 确认构建和发布成功
 
+### 步骤 7: 发布到 crates.io（手动）
+
+GitHub Actions 完成且构建成功后，手动发布到 crates.io：
+
+```bash
+# 1. 先 dry-run 预览
+cargo publish --dry-run
+
+# 2. 确认无误后执行发布
+cargo publish
+```
+
+> **注意**： crates.io 不支持 CI 自动发布，必须手动执行 `cargo publish`
+
 ## 快捷命令
 
 ```bash
