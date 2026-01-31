@@ -41,7 +41,9 @@ impl SearchFilter {
         }
 
         let name_lower = name.to_lowercase();
-        self.keywords.iter().all(|keyword| name_lower.contains(keyword))
+        self.keywords
+            .iter()
+            .all(|keyword| name_lower.contains(keyword))
     }
 
     /// Returns true if the filter has active search keywords.
@@ -121,7 +123,10 @@ fn filter_plugin_list(
         return vec![];
     }
     if let Some(search) = search {
-        plugins.into_iter().filter(|p| search.matches(&p.name)).collect()
+        plugins
+            .into_iter()
+            .filter(|p| search.matches(&p.name))
+            .collect()
     } else {
         plugins
     }
@@ -136,7 +141,10 @@ fn filter_skill_list(
         return vec![];
     }
     if let Some(search) = search {
-        skills.into_iter().filter(|s| search.matches(&s.name)).collect()
+        skills
+            .into_iter()
+            .filter(|s| search.matches(&s.name))
+            .collect()
     } else {
         skills
     }
@@ -151,7 +159,9 @@ fn filter_mcp_list(
         return vec![];
     }
     if let Some(search) = search {
-        mcp.into_iter().filter(|m| search.matches(&m.name)).collect()
+        mcp.into_iter()
+            .filter(|m| search.matches(&m.name))
+            .collect()
     } else {
         mcp
     }
@@ -166,7 +176,10 @@ fn filter_hook_list(
         return vec![];
     }
     if let Some(search) = search {
-        hooks.into_iter().filter(|h| search.matches(&h.name)).collect()
+        hooks
+            .into_iter()
+            .filter(|h| search.matches(&h.name))
+            .collect()
     } else {
         hooks
     }
@@ -181,7 +194,10 @@ fn filter_agent_list(
         return vec![];
     }
     if let Some(search) = search {
-        agents.into_iter().filter(|a| search.matches(&a.name)).collect()
+        agents
+            .into_iter()
+            .filter(|a| search.matches(&a.name))
+            .collect()
     } else {
         agents
     }
@@ -196,7 +212,10 @@ fn filter_command_list(
         return vec![];
     }
     if let Some(search) = search {
-        commands.into_iter().filter(|c| search.matches(&c.name)).collect()
+        commands
+            .into_iter()
+            .filter(|c| search.matches(&c.name))
+            .collect()
     } else {
         commands
     }

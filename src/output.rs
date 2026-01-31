@@ -31,9 +31,8 @@ pub struct ColorScheme {
     pub version: Option<Style>,
 }
 
-impl ColorScheme {
-    /// Create default color scheme with project-defined colors.
-    pub fn default() -> Self {
+impl Default for ColorScheme {
+    fn default() -> Self {
         Self {
             plugins: Some(AnsiColor::Blue.on_default()),
             skills: Some(AnsiColor::Green.on_default()),
@@ -44,7 +43,9 @@ impl ColorScheme {
             version: Some(AnsiColor::BrightBlack.on_default()),
         }
     }
+}
 
+impl ColorScheme {
     /// Get color style for a component type.
     pub fn for_component(&self, component_type: ComponentType) -> Option<Style> {
         match component_type {
@@ -114,7 +115,7 @@ pub fn colored_string(
     }
 
     if let Some(style) = scheme.for_component(component_type) {
-        format!("{}{}{}", style, text, anstyle::Reset::default())
+        format!("{}{}{}", style, text, anstyle::Reset)
     } else {
         text.to_string()
     }
@@ -159,11 +160,11 @@ pub fn write_colored_padded_field(
     } else if let Some(style) = scheme.for_component(component_type) {
         // With colors, we need to manually pad to account for ANSI codes
         let visible = visible_width(text);
-        let padding_needed = if width > visible { width - visible } else { 0 };
+        let padding_needed = width.saturating_sub(visible);
 
         match align {
             Alignment::Left => {
-                write!(output, "{}{}{}", style, text, anstyle::Reset::default())?;
+                write!(output, "{}{}{}", style, text, anstyle::Reset)?;
                 for _ in 0..padding_needed {
                     write!(output, " ")?;
                 }
@@ -172,7 +173,7 @@ pub fn write_colored_padded_field(
                 for _ in 0..padding_needed {
                     write!(output, " ")?;
                 }
-                write!(output, "{}{}{}", style, text, anstyle::Reset::default())?;
+                write!(output, "{}{}{}", style, text, anstyle::Reset)?;
             }
         }
     } else {
@@ -244,7 +245,10 @@ mod tests {
         assert_eq!(parse_component_type("mcp"), Some(ComponentType::Mcp));
         assert_eq!(parse_component_type("hook"), Some(ComponentType::Hook));
         assert_eq!(parse_component_type("agent"), Some(ComponentType::Agent));
-        assert_eq!(parse_component_type("command"), Some(ComponentType::Command));
+        assert_eq!(
+            parse_component_type("command"),
+            Some(ComponentType::Command)
+        );
         assert_eq!(parse_component_type("unknown"), None);
     }
 
@@ -252,7 +256,12 @@ mod tests {
     fn test_colored_string_no_colors() {
         let settings = ColorSettings::from_env();
         if !settings.should_use_colors() {
-            let result = colored_string("test", ComponentType::Plugin, &ColorScheme::default(), &settings);
+            let result = colored_string(
+                "test",
+                ComponentType::Plugin,
+                &ColorScheme::default(),
+                &settings,
+            );
             assert_eq!(result, "test");
         }
     }

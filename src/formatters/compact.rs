@@ -19,7 +19,12 @@ pub fn format_compact(
     if !info.plugins.is_empty() {
         writeln!(output, "PLUGINS    {} installed", info.plugins.len())?;
         for plugin in &info.plugins {
-            let colored = colored_string(&plugin.name, ComponentType::Plugin, color_scheme, color_settings);
+            let colored = colored_string(
+                &plugin.name,
+                ComponentType::Plugin,
+                color_scheme,
+                color_settings,
+            );
             writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
@@ -29,7 +34,12 @@ pub fn format_compact(
     if !info.skills.is_empty() {
         writeln!(output, "SKILLS     {} available", info.skills.len())?;
         for skill in &info.skills {
-            let colored = colored_string(&skill.name, ComponentType::Skill, color_scheme, color_settings);
+            let colored = colored_string(
+                &skill.name,
+                ComponentType::Skill,
+                color_scheme,
+                color_settings,
+            );
             writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
@@ -45,7 +55,8 @@ pub fn format_compact(
     if !info.mcp_servers.is_empty() {
         writeln!(output, "MCP        {} servers", info.mcp_servers.len())?;
         for mcp in &info.mcp_servers {
-            let colored = colored_string(&mcp.name, ComponentType::Mcp, color_scheme, color_settings);
+            let colored =
+                colored_string(&mcp.name, ComponentType::Mcp, color_scheme, color_settings);
             writeln!(output, " {}", colored)?;
         }
         writeln!(output)?;
@@ -55,7 +66,12 @@ pub fn format_compact(
     if !info.hooks.is_empty() {
         writeln!(output, "HOOKS      {} configured", info.hooks.len())?;
         for hook in &info.hooks {
-            let colored = colored_string(&hook.name, ComponentType::Hook, color_scheme, color_settings);
+            let colored = colored_string(
+                &hook.name,
+                ComponentType::Hook,
+                color_scheme,
+                color_settings,
+            );
             writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
@@ -65,7 +81,12 @@ pub fn format_compact(
     if !info.agents.is_empty() {
         writeln!(output, "AGENTS     {} defined", info.agents.len())?;
         for agent in &info.agents {
-            let colored = colored_string(&agent.name, ComponentType::Agent, color_scheme, color_settings);
+            let colored = colored_string(
+                &agent.name,
+                ComponentType::Agent,
+                color_scheme,
+                color_settings,
+            );
             writeln!(output, "  {}", colored)?;
         }
         writeln!(output)?;
@@ -75,7 +96,12 @@ pub fn format_compact(
     if !info.commands.is_empty() {
         writeln!(output, "COMMANDS   {} available", info.commands.len())?;
         for cmd in &info.commands {
-            let colored = colored_string(&cmd.name, ComponentType::Command, color_scheme, color_settings);
+            let colored = colored_string(
+                &cmd.name,
+                ComponentType::Command,
+                color_scheme,
+                color_settings,
+            );
             writeln!(output, "  /{}", colored)?;
         }
     }

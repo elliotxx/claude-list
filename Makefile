@@ -1,7 +1,7 @@
 # claude-list Makefile
 # Run `make` or `make help` to see available commands
 
-.PHONY: help build test check lint fmt clippy clean run release check-diff
+.PHONY: help build test check lint fmt clippy clean run release check-diff check-fix
 
 # Default target - show help
 help:
@@ -13,6 +13,7 @@ help:
 	@echo ""
 	@echo "验证命令:"
 	@echo "  make check            运行所有检查 (fmt + clippy + test)"
+	@echo "  make check-fix        修复所有检查问题并运行测试"
 	@echo "  make test             运行单元测试"
 	@echo "  make lint             运行代码检查 (fmt check + clippy)"
 	@echo "  make clippy           运行 clippy 静态分析"
@@ -58,6 +59,11 @@ fmt:
 # Fix format
 fmt-fix:
 	cargo fmt
+
+# Fix all issues and run tests
+check-fix: fmt-fix
+	@cargo clippy --all-features --fix --allow-staged --allow-dirty 2>/dev/null || true
+	@cargo test --all-features --verbose
 
 # Lint: fmt check + clippy
 lint: fmt clippy

@@ -44,7 +44,10 @@ fn run() -> Result<()> {
     // Create color settings (respect --no-color flag)
     let mut color_settings = ColorSettings::from_env();
     if args.no_color {
-        color_settings = ColorSettings { enabled: false, force_colors: false };
+        color_settings = ColorSettings {
+            enabled: false,
+            force_colors: false,
+        };
     }
     let color_scheme = ColorScheme::default();
 
@@ -74,11 +77,21 @@ fn run() -> Result<()> {
         };
         match mode {
             OutputMode::Compact => {
-                format_compact(&info, &color_scheme, &color_settings, &mut std::io::stdout())?;
+                format_compact(
+                    &info,
+                    &color_scheme,
+                    &color_settings,
+                    &mut std::io::stdout(),
+                )?;
             }
             OutputMode::Detailed => {
                 // Detailed format: shows version, source, path
-                format_detailed(&info, &color_scheme, &color_settings, &mut std::io::stdout())?;
+                format_detailed(
+                    &info,
+                    &color_scheme,
+                    &color_settings,
+                    &mut std::io::stdout(),
+                )?;
             }
         }
     }

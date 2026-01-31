@@ -1,7 +1,9 @@
 //! Detailed output formatter (for -l flag)
 
 use crate::info::ClaudeInfo;
-use crate::output::{ColorScheme, ColorSettings, ComponentType, Alignment, write_colored_padded_field};
+use crate::output::{
+    write_colored_padded_field, Alignment, ColorScheme, ColorSettings, ComponentType,
+};
 use std::io::Write;
 
 pub fn format_detailed(
@@ -38,10 +40,34 @@ pub fn format_detailed(
                 crate::info::Source::ThirdParty => "third-party",
             };
             write!(output, "  ")?;
-            write_colored_padded_field(output, &plugin.name, ComponentType::Plugin, color_scheme, color_settings, 30, Alignment::Left)?;
-            write_colored_padded_field(output, version, ComponentType::Version, color_scheme, color_settings, 18, Alignment::Right)?;
+            write_colored_padded_field(
+                output,
+                &plugin.name,
+                ComponentType::Plugin,
+                color_scheme,
+                color_settings,
+                30,
+                Alignment::Left,
+            )?;
+            write_colored_padded_field(
+                output,
+                version,
+                ComponentType::Version,
+                color_scheme,
+                color_settings,
+                18,
+                Alignment::Right,
+            )?;
             write!(output, " ")?;
-            write_colored_padded_field(output, source, ComponentType::Plugin, color_scheme, color_settings, 15, Alignment::Left)?;
+            write_colored_padded_field(
+                output,
+                source,
+                ComponentType::Plugin,
+                color_scheme,
+                color_settings,
+                15,
+                Alignment::Left,
+            )?;
             write!(output, " {}", plugin.path.display())?;
             writeln!(output)?;
         }
@@ -71,10 +97,34 @@ pub fn format_detailed(
                 crate::info::Source::ThirdParty => "third-party",
             };
             write!(output, "  ")?;
-            write_colored_padded_field(output, &skill.name, ComponentType::Skill, color_scheme, color_settings, 30, Alignment::Left)?;
-            write_colored_padded_field(output, version, ComponentType::Version, color_scheme, color_settings, 18, Alignment::Right)?;
+            write_colored_padded_field(
+                output,
+                &skill.name,
+                ComponentType::Skill,
+                color_scheme,
+                color_settings,
+                30,
+                Alignment::Left,
+            )?;
+            write_colored_padded_field(
+                output,
+                version,
+                ComponentType::Version,
+                color_scheme,
+                color_settings,
+                18,
+                Alignment::Right,
+            )?;
             write!(output, " ")?;
-            write_colored_padded_field(output, source, ComponentType::Skill, color_scheme, color_settings, 15, Alignment::Left)?;
+            write_colored_padded_field(
+                output,
+                source,
+                ComponentType::Skill,
+                color_scheme,
+                color_settings,
+                15,
+                Alignment::Left,
+            )?;
             write!(output, " {}", skill.path.display())?;
             writeln!(output)?;
         }
