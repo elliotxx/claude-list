@@ -29,20 +29,19 @@ pub fn format_detailed(
     // PLUGINS
     if !info.plugins.is_empty() {
         writeln!(output, "PLUGINS    {} installed", info.plugins.len())?;
-        writeln!(output, "  {:<30} {:<15} DESCRIPTION", "NAME", "SOURCE")?;
+        writeln!(output, "  {:<30} {:<15} PATH", "NAME", "SOURCE")?;
         writeln!(
             output,
             "  {:<30} {:<15} {}",
             "-".repeat(NAME_WIDTH),
             "-".repeat(SOURCE_WIDTH),
-            "-".repeat(DESC_WIDTH)
+            "-".repeat(40)
         )?;
         for plugin in &info.plugins {
             let source = match plugin.source {
                 crate::info::Source::Official => "official",
                 crate::info::Source::ThirdParty => "third-party",
             };
-            let description = plugin.get_description().unwrap_or_default();
             write!(output, "  ")?;
             write_colored_padded_field(
                 output,
@@ -62,10 +61,8 @@ pub fn format_detailed(
                 SOURCE_WIDTH,
                 Alignment::Left,
             )?;
-            write!(output, " ")?;
-            // Apply truncation to description
-            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
-            writeln!(output, "{}", truncated_desc)?;
+            write!(output, " {}", plugin.path.display())?;
+            writeln!(output)?;
         }
         writeln!(output)?;
     }
@@ -298,15 +295,15 @@ mod tests {
         format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
         let output = String::from_utf8(buffer).unwrap();
 
-        // Verify new format: NAME, SOURCE, DESCRIPTION (no VERSION, no PATH)
+        // Verify plugins format: NAME, SOURCE, PATH (no VERSION, no DESCRIPTION)
         assert!(output.contains("NAME"));
         assert!(output.contains("SOURCE"));
-        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("PATH"));
         assert!(output.contains("context7"));
         assert!(output.contains("official"));
-        assert!(output.contains("Official plugin")); // Derived description
+        assert!(output.contains("settings.json")); // PATH should be shown
         assert!(!output.contains("2.1.0")); // VERSION should not appear
-        assert!(!output.contains("PATH"));
+        assert!(!output.contains("Official plugin")); // DESCRIPTION should not appear
     }
 
     #[test]
@@ -496,17 +493,18 @@ mod tests {
 
     #[test]
     fn test_format_detailed_truncates_long_description() {
+        // Use SkillInfo for truncation test since plugins show PATH, not description
         let info = ClaudeInfo {
             version: "0.1.0".to_string(),
             config_dir: PathBuf::from("/test/.claude"),
-            plugins: vec![PluginInfo {
-                name: "test-plugin".to_string(),
+            plugins: vec![],
+            skills: vec![SkillInfo {
+                name: "test-skill".to_string(),
                 version: Some("1.0.0".to_string()),
                 source: Source::Official,
-                path: PathBuf::from("/test/.claude/settings.json"),
+                path: PathBuf::from("/test/.claude/skills/test-skill"),
                 description: Some("This is a very long description that definitely exceeds fifty characters and should be truncated".to_string()),
             }],
-            skills: vec![],
             sessions: SessionInfo {
                 count: 0,
                 last_session: None,

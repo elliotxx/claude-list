@@ -372,7 +372,7 @@ fn test_detailed_output_with_l_flag() {
     // Should show source (official/third-party)
     assert!(stdout.contains("official") || stdout.contains("third-party"));
     // Should show descriptions (derived from source for plugins)
-    assert!(stdout.contains("Official plugin") || stdout.contains("Third-party plugin"));
+    assert!(stdout.contains("settings.json") || stdout.contains("plugins"));
 }
 
 #[test]
@@ -932,7 +932,7 @@ fn test_detailed_output_works() {
     // Should show source
     assert!(stdout.contains("official") || stdout.contains("third-party"));
     // Should show descriptions
-    assert!(stdout.contains("Official plugin") || stdout.contains("Third-party plugin"));
+    assert!(stdout.contains("settings.json") || stdout.contains("plugins"));
 }
 
 // ==================== Fixtures Verification Tests ====================
@@ -1411,10 +1411,10 @@ fn test_detailed_output_with_search_and_colors() {
     let stdout = String::from_utf8(output.stdout).unwrap();
 
     assert!(output.status.success());
-    // Should show detailed format (with NAME, SOURCE, DESCRIPTION, no VERSION)
+    // Should show detailed format (NAME, SOURCE, PATH for plugins)
     assert!(stdout.contains("NAME"));
     assert!(stdout.contains("SOURCE"));
-    assert!(stdout.contains("DESCRIPTION"));
+    assert!(stdout.contains("PATH")); // Plugins show PATH, not DESCRIPTION
     assert!(stdout.contains("official") || stdout.contains("third-party"));
     // Should filter by search
     assert!(stdout.contains("context7"));
@@ -1439,20 +1439,20 @@ fn test_all_output_modes_with_search() {
     assert!(output.status.success());
     assert!(stdout.contains("context7"));
 
-    // Detailed mode with search
+    // Detailed mode with search - search for skill to get DESCRIPTION column
     let mut cmd = Command::cargo_bin("claude-list").unwrap();
     cmd.arg("--config")
         .arg(&claude_dir)
         .arg("--output")
         .arg("detailed")
         .arg("--search")
-        .arg("context");
+        .arg("test");
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(output.status.success());
-    assert!(stdout.contains("context7"));
+    assert!(stdout.contains("test-skill")); // Matches skill
     assert!(stdout.contains("NAME"));
-    assert!(stdout.contains("DESCRIPTION"));
+    assert!(stdout.contains("DESCRIPTION")); // Skills have description
 
     // JSON mode with search
     let mut cmd = Command::cargo_bin("claude-list").unwrap();
