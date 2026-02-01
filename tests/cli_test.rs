@@ -342,10 +342,10 @@ fn test_short_l_flag_for_detailed_output() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    // Should show detailed output with NAME, PATH (for plugins), DESCRIPTION (for others)
+    // Should show detailed output with NAME, SOURCE (for skills), DESCRIPTION (for others)
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(stdout.contains("NAME"));
-    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
+    assert!(stdout.contains("SOURCE")); // Skills now show SOURCE (location: global/plugin)
     assert!(stdout.contains("DESCRIPTION"));
     assert!(stdout.contains("context7"));
 }
@@ -364,9 +364,9 @@ fn test_detailed_output_with_l_flag() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show NAME, PATH (for plugins), DESCRIPTION (no SOURCE column)
+    // Should show NAME, PATH (for plugins), SOURCE (for skills), DESCRIPTION
     assert!(stdout.contains("NAME"));
-    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
+    assert!(stdout.contains("SOURCE")); // Skills now show SOURCE (location: global/plugin)
     assert!(stdout.contains("DESCRIPTION"));
     // Should show plugin path
     assert!(stdout.contains("settings.json") || stdout.contains("plugins"));
@@ -387,9 +387,9 @@ fn test_detailed_output_shows_skills_description() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show NAME, DESCRIPTION (no SOURCE column)
+    // Should show NAME, SOURCE (for skills), DESCRIPTION
     assert!(stdout.contains("NAME"));
-    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
+    assert!(stdout.contains("SOURCE")); // Skills now show SOURCE (location: global/plugin)
     assert!(stdout.contains("DESCRIPTION"));
     // Should show skill description from skill.yaml
     assert!(stdout.contains("A test skill"));
@@ -920,9 +920,9 @@ fn test_detailed_output_works() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show NAME, PATH (for plugins), DESCRIPTION (no SOURCE column)
+    // Should show NAME, PATH (for plugins), SOURCE (for skills), DESCRIPTION
     assert!(stdout.contains("NAME"));
-    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
+    assert!(stdout.contains("SOURCE")); // Skills now show SOURCE (location: global/plugin)
     assert!(stdout.contains("DESCRIPTION"));
     // Should show plugin path
     assert!(stdout.contains("settings.json") || stdout.contains("plugins"));
@@ -1398,20 +1398,20 @@ fn test_detailed_output_with_search_and_colors() {
         .arg(claude_dir)
         .arg("-l")
         .arg("--search")
-        .arg("context");
+        .arg("test"); // "test" matches both plugin_test and test-skill
 
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
     assert!(output.status.success());
-    // Should show detailed format (NAME, PATH for plugins, no SOURCE column)
+    // Should show detailed format (NAME, PATH for plugins, SOURCE for skills)
     assert!(stdout.contains("NAME"));
-    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
+    assert!(stdout.contains("SOURCE")); // Skills now show SOURCE (location: global/plugin)
     assert!(stdout.contains("PATH")); // Plugins show PATH, not DESCRIPTION
                                       // Should filter by search
-    assert!(stdout.contains("context7"));
+    assert!(stdout.contains("test-skill")); // Matches skill
     // Should not show non-matching plugins
-    assert!(!stdout.contains("plugin_test"));
+    assert!(!stdout.contains("context7"));
 }
 
 #[test]

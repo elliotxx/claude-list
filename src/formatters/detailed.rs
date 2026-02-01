@@ -55,15 +55,22 @@ pub fn format_detailed(
     // SKILLS
     if !info.skills.is_empty() {
         writeln!(output, "SKILLS     {} available", info.skills.len())?;
-        writeln!(output, "  {:<30} DESCRIPTION", "NAME")?;
+        writeln!(output, "  {:<30} {:<25} DESCRIPTION", "NAME", "SOURCE")?;
         writeln!(
             output,
-            "  {:<30} {}",
+            "  {:<30} {:<25} {}",
             "-".repeat(NAME_WIDTH),
+            "-".repeat(25),
             "-".repeat(DESC_WIDTH)
         )?;
         for skill in &info.skills {
             let description = skill.get_description().unwrap_or_default();
+            let source = match &skill.location_type {
+                crate::info::SkillLocation::Global => "global".to_string(),
+                crate::info::SkillLocation::Plugin { plugin_name } => {
+                    plugin_name.clone().unwrap_or_else(|| "plugin".to_string())
+                }
+            };
             write!(output, "  ")?;
             write_colored_padded_field(
                 output,
@@ -72,6 +79,15 @@ pub fn format_detailed(
                 color_scheme,
                 color_settings,
                 NAME_WIDTH,
+                Alignment::Left,
+            )?;
+            write_colored_padded_field(
+                output,
+                &source,
+                ComponentType::Skill,
+                color_scheme,
+                color_settings,
+                25,
                 Alignment::Left,
             )?;
             write!(output, " ")?;
@@ -289,6 +305,7 @@ mod tests {
                 source: Source::Official,
                 path: PathBuf::from("/test/.claude/skills/test-skill"),
                 description: Some("A test skill".to_string()),
+                location_type: SkillLocation::Global,
             }],
             sessions: SessionInfo {
                 count: 0,
@@ -308,10 +325,10 @@ mod tests {
         let output = String::from_utf8(buffer).unwrap();
 
         assert!(output.contains("NAME"));
-        assert!(!output.contains("SOURCE")); // SOURCE column removed
+        assert!(output.contains("SOURCE")); // Skills now show SOURCE (location)
         assert!(output.contains("DESCRIPTION"));
         assert!(output.contains("test-skill"));
-        assert!(!output.contains("official")); // source value no longer shown
+        assert!(output.contains("global")); // SOURCE shows "global" for global skills
         assert!(output.contains("A test skill")); // Skill description
         assert!(!output.contains("1.0.0")); // VERSION should not appear
     }
@@ -475,6 +492,7 @@ mod tests {
                 source: Source::Official,
                 path: PathBuf::from("/test/.claude/skills/test-skill"),
                 description: Some("This is a very long description that definitely exceeds fifty characters and should be truncated".to_string()),
+                location_type: SkillLocation::Global,
             }],
             sessions: SessionInfo {
                 count: 0,

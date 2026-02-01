@@ -45,6 +45,21 @@ pub enum Source {
     ThirdParty,
 }
 
+/// Represents where a skill is located.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(tag = "type")]
+pub enum SkillLocation {
+    /// Global skills from ~/.claude/skills/
+    #[default]
+    Global,
+    /// Skills bundled within a plugin from plugins/cache/*/*/skills/
+    Plugin {
+        /// The name of the plugin this skill belongs to
+        #[serde(skip_serializing_if = "Option::is_none")]
+        plugin_name: Option<String>,
+    },
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PluginInfo {
     pub name: String,
@@ -74,6 +89,9 @@ pub struct SkillInfo {
     pub source: Source,
     pub path: PathBuf,
     pub description: Option<String>,
+    /// Where this skill is located (global or from plugin)
+    #[serde(default)]
+    pub location_type: SkillLocation,
 }
 
 impl DescriptionProvider for SkillInfo {

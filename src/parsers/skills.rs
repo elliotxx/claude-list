@@ -1,14 +1,14 @@
 //! Parse installed skills from skills/ directory and plugin skills directories
 
 use crate::error::Result;
-use crate::info::{SkillInfo, Source};
+use crate::info::{SkillInfo, SkillLocation, Source};
 use serde_json::Value;
 use serde_yaml::Value as YamlValue;
 use std::fs;
 use std::path::Path;
 
 /// Scan a single skills directory and return parsed skills
-fn scan_skills_dir(skills_path: &Path, skills: &mut Vec<SkillInfo>) {
+fn scan_skills_dir(skills_path: &Path, location: SkillLocation, skills: &mut Vec<SkillInfo>) {
     if !skills_path.exists() || !skills_path.is_dir() {
         return;
     }
@@ -86,12 +86,19 @@ fn scan_skills_dir(skills_path: &Path, skills: &mut Vec<SkillInfo>) {
             source: Source::Official,
             path: skill_path,
             description,
+            location_type: location.clone(),
         });
     }
 }
 
+/// Plugin info extracted from installed_plugins.json
+struct PluginInfo {
+    install_path: std::path::PathBuf,
+    plugin_name: String,
+}
+
 /// Get plugin install paths from installed_plugins.json
-fn get_plugin_install_paths(base_path: &Path) -> Vec<std::path::PathBuf> {
+fn get_plugins(base_path: &Path) -> Vec<PluginInfo> {
     let installed_path = base_path.join("plugins").join("installed_plugins.json");
     if !installed_path.exists() {
         return vec![];
@@ -107,21 +114,27 @@ fn get_plugin_install_paths(base_path: &Path) -> Vec<std::path::PathBuf> {
         Err(_) => return vec![],
     };
 
-    let mut paths = Vec::new();
+    let mut plugins = Vec::new();
 
     if let Some(plugins_obj) = json.get("plugins").and_then(|v| v.as_object()) {
-        for plugin_array in plugins_obj.values() {
+        for (full_name, plugin_array) in plugins_obj {
+            // Parse "name@source" format to extract plugin name
+            let plugin_name = full_name.split('@').next().unwrap_or(full_name).to_string();
+
             if let Some(arr) = plugin_array.as_array() {
                 if let Some(first) = arr.first() {
                     if let Some(install_path) = first.get("installPath").and_then(|v| v.as_str()) {
-                        paths.push(std::path::PathBuf::from(install_path));
+                        plugins.push(PluginInfo {
+                            install_path: std::path::PathBuf::from(install_path),
+                            plugin_name: plugin_name.clone(),
+                        });
                     }
                 }
             }
         }
     }
 
-    paths
+    plugins
 }
 
 pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
@@ -129,13 +142,23 @@ pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
 
     // Scan global skills directory
     let global_skills_dir = base_path.join("skills");
-    scan_skills_dir(&global_skills_dir, &mut skills);
+    scan_skills_dir(
+        &global_skills_dir,
+        SkillLocation::Global,
+        &mut skills,
+    );
 
     // Scan skills from installed plugins
-    let plugin_paths = get_plugin_install_paths(base_path);
-    for plugin_path in plugin_paths {
-        let plugin_skills_dir = plugin_path.join("skills");
-        scan_skills_dir(&plugin_skills_dir, &mut skills);
+    let plugins = get_plugins(base_path);
+    for plugin in plugins {
+        let plugin_skills_dir = plugin.install_path.join("skills");
+        scan_skills_dir(
+            &plugin_skills_dir,
+            SkillLocation::Plugin {
+                plugin_name: Some(plugin.plugin_name),
+            },
+            &mut skills,
+        );
     }
 
     Ok(skills)
@@ -312,7 +335,7 @@ description: A custom tool for special tasks
             .unwrap();
 
         // Should gracefully degrade (skip this skill)
-        let skills = parse_skills(path).unwrap();
+        let _skills = parse_skills(path).unwrap();
         // Could be empty or the skill might still be listed with None values
         // depending on implementation
     }

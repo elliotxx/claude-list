@@ -133,6 +133,7 @@ mod tests {
                 source: Source::Official,
                 path: PathBuf::from("/test/.claude/skills/test-skill"),
                 description: Some("A test skill".to_string()),
+                location_type: SkillLocation::Global,
             }],
             sessions: SessionInfo {
                 count: 42,
