@@ -1,22 +1,26 @@
-//! Parse installed skills from skills/ directory
+//! Parse installed skills from skills/ directory and plugin skills directories
 
 use crate::error::Result;
 use crate::info::{SkillInfo, Source};
-use serde_yaml::Value;
+use serde_json::Value;
+use serde_yaml::Value as YamlValue;
 use std::fs;
 use std::path::Path;
 
-pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
-    let skills_dir = base_path.join("skills");
-
-    if !skills_dir.exists() || !skills_dir.is_dir() {
-        return Ok(vec![]);
+/// Scan a single skills directory and return parsed skills
+fn scan_skills_dir(skills_path: &Path, skills: &mut Vec<SkillInfo>) {
+    if !skills_path.exists() || !skills_path.is_dir() {
+        return;
     }
 
-    let mut skills = Vec::new();
-
-    for entry in fs::read_dir(&skills_dir)? {
-        let entry = entry?;
+    for entry in match fs::read_dir(skills_path) {
+        Ok(entries) => entries,
+        Err(_) => return,
+    } {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
         let skill_path = entry.path();
 
         if !skill_path.is_dir() {
@@ -42,7 +46,7 @@ pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
                     // Parse frontmatter
                     if let Some(frontmatter) = content.trim_start_matches("---").split("---").next()
                     {
-                        if let Ok(yaml) = serde_yaml::from_str::<Value>(frontmatter) {
+                        if let Ok(yaml) = serde_yaml::from_str::<YamlValue>(frontmatter) {
                             description = yaml
                                 .get("description")
                                 .and_then(|v| v.as_str())
@@ -62,7 +66,7 @@ pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
             let yaml_path = skill_path.join("skill.yaml");
             if yaml_path.exists() {
                 if let Ok(content) = fs::read_to_string(&yaml_path) {
-                    if let Ok(yaml) = serde_yaml::from_str::<Value>(&content) {
+                    if let Ok(yaml) = serde_yaml::from_str::<YamlValue>(&content) {
                         version = yaml
                             .get("version")
                             .and_then(|v| v.as_str())
@@ -83,6 +87,55 @@ pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
             path: skill_path,
             description,
         });
+    }
+}
+
+/// Get plugin install paths from installed_plugins.json
+fn get_plugin_install_paths(base_path: &Path) -> Vec<std::path::PathBuf> {
+    let installed_path = base_path.join("plugins").join("installed_plugins.json");
+    if !installed_path.exists() {
+        return vec![];
+    }
+
+    let content = match fs::read_to_string(&installed_path) {
+        Ok(c) => c,
+        Err(_) => return vec![],
+    };
+
+    let json: Value = match serde_json::from_str(&content) {
+        Ok(j) => j,
+        Err(_) => return vec![],
+    };
+
+    let mut paths = Vec::new();
+
+    if let Some(plugins_obj) = json.get("plugins").and_then(|v| v.as_object()) {
+        for plugin_array in plugins_obj.values() {
+            if let Some(arr) = plugin_array.as_array() {
+                if let Some(first) = arr.first() {
+                    if let Some(install_path) = first.get("installPath").and_then(|v| v.as_str()) {
+                        paths.push(std::path::PathBuf::from(install_path));
+                    }
+                }
+            }
+        }
+    }
+
+    paths
+}
+
+pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
+    let mut skills = Vec::new();
+
+    // Scan global skills directory
+    let global_skills_dir = base_path.join("skills");
+    scan_skills_dir(&global_skills_dir, &mut skills);
+
+    // Scan skills from installed plugins
+    let plugin_paths = get_plugin_install_paths(base_path);
+    for plugin_path in plugin_paths {
+        let plugin_skills_dir = plugin_path.join("skills");
+        scan_skills_dir(&plugin_skills_dir, &mut skills);
     }
 
     Ok(skills)
@@ -282,5 +335,79 @@ description: A custom tool for special tasks
         // Skill should still be parsed with default values
         assert_eq!(skills.len(), 1);
         assert_eq!(skills[0].name, "test-skill");
+    }
+
+    #[test]
+    fn test_parse_skills_from_plugins() {
+        // Test scanning skills from plugin install paths
+        let dir = TempDir::new().unwrap();
+        let path = dir.path();
+
+        // Create a mock plugin structure with skills
+        let plugin_dir = path.join("plugins");
+        create_dir_all(&plugin_dir).unwrap();
+
+        // Create the plugin's skills directory first
+        let plugin_skill_path = path.join("test-plugin-1.0.0/skills/plugin-skill");
+        create_dir_all(&plugin_skill_path).unwrap();
+
+        // Create SKILL.md in plugin skill
+        let skill_md = r#"---
+name: plugin-skill
+description: A skill from plugin
+---
+
+# Plugin Skill
+"#;
+        File::create(plugin_skill_path.join("SKILL.md"))
+            .unwrap()
+            .write_all(skill_md.as_bytes())
+            .unwrap();
+
+        // Create installed_plugins.json with installPath (absolute path)
+        let install_path = plugin_skill_path
+            .join("..")
+            .join("..")
+            .to_string_lossy()
+            .replace("\\", "/");
+        let installed_json = format!(
+            r#"{{
+            "version": 2,
+            "plugins": {{
+                "test-plugin@claude-plugins-official": [
+                    {{
+                        "scope": "project",
+                        "version": "1.0.0",
+                        "installPath": "{}"
+                    }}
+                ]
+            }}
+        }}"#,
+            install_path
+        );
+
+        File::create(plugin_dir.join("installed_plugins.json"))
+            .unwrap()
+            .write_all(installed_json.as_bytes())
+            .unwrap();
+
+        // Also create a global skill
+        create_dir_all(path.join("skills")).unwrap();
+        create_dir_all(path.join("skills/global-skill")).unwrap();
+        File::create(path.join("skills/global-skill/skill.yaml"))
+            .unwrap()
+            .write_all(b"name: global-skill\nversion: 1.0.0\ndescription: A global skill")
+            .unwrap();
+
+        let skills = parse_skills(path).unwrap();
+
+        // Should have 2 skills: 1 global + 1 from plugin
+        assert_eq!(skills.len(), 2);
+
+        let global = skills.iter().find(|s| s.name == "global-skill").unwrap();
+        assert!(global.path.ends_with("global-skill"));
+
+        let plugin_skill = skills.iter().find(|s| s.name == "plugin-skill").unwrap();
+        assert!(plugin_skill.path.to_string_lossy().contains("test-plugin"));
     }
 }
