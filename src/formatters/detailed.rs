@@ -1,6 +1,6 @@
 //! Detailed output formatter (for -l flag)
 //!
-//! Output format: NAME, SOURCE, DESCRIPTION instead of NAME, VERSION, SOURCE, PATH
+//! Output format: NAME, PATH (plugins) or NAME, DESCRIPTION (other components)
 
 use crate::info::{ClaudeInfo, DescriptionProvider};
 use crate::output::{
@@ -10,7 +10,6 @@ use crate::output::{
 use std::io::Write;
 
 const NAME_WIDTH: usize = 30;
-const SOURCE_WIDTH: usize = 15;
 const STATUS_WIDTH: usize = 18;
 const TYPE_WIDTH: usize = 18;
 const DESC_WIDTH: usize = 50;
@@ -29,19 +28,14 @@ pub fn format_detailed(
     // PLUGINS
     if !info.plugins.is_empty() {
         writeln!(output, "PLUGINS    {} installed", info.plugins.len())?;
-        writeln!(output, "  {:<30} {:<15} PATH", "NAME", "SOURCE")?;
+        writeln!(output, "  {:<30} PATH", "NAME")?;
         writeln!(
             output,
-            "  {:<30} {:<15} {}",
+            "  {:<30} {}",
             "-".repeat(NAME_WIDTH),
-            "-".repeat(SOURCE_WIDTH),
-            "-".repeat(40)
+            "-".repeat(50)
         )?;
         for plugin in &info.plugins {
-            let source = match plugin.source {
-                crate::info::Source::Official => "official",
-                crate::info::Source::ThirdParty => "third-party",
-            };
             write!(output, "  ")?;
             write_colored_padded_field(
                 output,
@@ -50,15 +44,6 @@ pub fn format_detailed(
                 color_scheme,
                 color_settings,
                 NAME_WIDTH,
-                Alignment::Left,
-            )?;
-            write_colored_padded_field(
-                output,
-                source,
-                ComponentType::Plugin,
-                color_scheme,
-                color_settings,
-                SOURCE_WIDTH,
                 Alignment::Left,
             )?;
             write!(output, " {}", plugin.path.display())?;
@@ -70,19 +55,14 @@ pub fn format_detailed(
     // SKILLS
     if !info.skills.is_empty() {
         writeln!(output, "SKILLS     {} available", info.skills.len())?;
-        writeln!(output, "  {:<30} {:<15} DESCRIPTION", "NAME", "SOURCE")?;
+        writeln!(output, "  {:<30} DESCRIPTION", "NAME")?;
         writeln!(
             output,
-            "  {:<30} {:<15} {}",
+            "  {:<30} {}",
             "-".repeat(NAME_WIDTH),
-            "-".repeat(SOURCE_WIDTH),
             "-".repeat(DESC_WIDTH)
         )?;
         for skill in &info.skills {
-            let source = match skill.source {
-                crate::info::Source::Official => "official",
-                crate::info::Source::ThirdParty => "third-party",
-            };
             let description = skill.get_description().unwrap_or_default();
             write!(output, "  ")?;
             write_colored_padded_field(
@@ -92,15 +72,6 @@ pub fn format_detailed(
                 color_scheme,
                 color_settings,
                 NAME_WIDTH,
-                Alignment::Left,
-            )?;
-            write_colored_padded_field(
-                output,
-                source,
-                ComponentType::Skill,
-                color_scheme,
-                color_settings,
-                SOURCE_WIDTH,
                 Alignment::Left,
             )?;
             write!(output, " ")?;
@@ -295,12 +266,12 @@ mod tests {
         format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
         let output = String::from_utf8(buffer).unwrap();
 
-        // Verify plugins format: NAME, SOURCE, PATH (no VERSION, no DESCRIPTION)
+        // Verify plugins format: NAME, PATH (no SOURCE, no VERSION, no DESCRIPTION)
         assert!(output.contains("NAME"));
-        assert!(output.contains("SOURCE"));
         assert!(output.contains("PATH"));
         assert!(output.contains("context7"));
-        assert!(output.contains("official"));
+        assert!(!output.contains("SOURCE")); // SOURCE column removed
+        assert!(!output.contains("official")); // source value no longer shown
         assert!(output.contains("settings.json")); // PATH should be shown
         assert!(!output.contains("2.1.0")); // VERSION should not appear
         assert!(!output.contains("Official plugin")); // DESCRIPTION should not appear
@@ -337,10 +308,10 @@ mod tests {
         let output = String::from_utf8(buffer).unwrap();
 
         assert!(output.contains("NAME"));
-        assert!(output.contains("SOURCE"));
+        assert!(!output.contains("SOURCE")); // SOURCE column removed
         assert!(output.contains("DESCRIPTION"));
         assert!(output.contains("test-skill"));
-        assert!(output.contains("official"));
+        assert!(!output.contains("official")); // source value no longer shown
         assert!(output.contains("A test skill")); // Skill description
         assert!(!output.contains("1.0.0")); // VERSION should not appear
     }

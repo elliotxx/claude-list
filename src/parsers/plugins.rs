@@ -41,16 +41,10 @@ pub fn parse_plugins(base_path: &Path) -> Result<Vec<PluginInfo>> {
                     let name = p.get("name")?.as_str()?.to_string();
                     let version = p.get("version").and_then(|v| v.as_str()).map(String::from);
 
-                    let source = if name.starts_with("plugin_") {
-                        Source::ThirdParty
-                    } else {
-                        Source::Official
-                    };
-
                     Some(PluginInfo {
                         name,
                         version,
-                        source,
+                        source: Source::Official,
                         path: settings_path.clone(),
                         description: None,
                     })
@@ -79,17 +73,8 @@ fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
 
     if let Some(plugins_obj) = json.get("plugins").and_then(|v| v.as_object()) {
         for (full_name, plugin_array) in plugins_obj {
-            // Parse "name@source" format
-            let parts: Vec<&str> = full_name.split('@').collect();
-            let name = parts[0].to_string();
-            let source = if parts.len() > 1
-                && parts[1] != "claude-plugins-official"
-                && parts[1] != "claude-code-workflows"
-            {
-                Source::ThirdParty
-            } else {
-                Source::Official
-            };
+            // Parse "name@source" format - extract just the name
+            let name = full_name.split('@').next().unwrap_or(full_name).to_string();
 
             if let Some(arr) = plugin_array.as_array() {
                 if let Some(first) = arr.first() {
@@ -115,7 +100,7 @@ fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
                     plugins.push(PluginInfo {
                         name,
                         version,
-                        source,
+                        source: Source::Official,
                         path,
                         description: None,
                     });
@@ -159,7 +144,7 @@ mod tests {
         assert_eq!(plugins[0].source, Source::Official);
 
         assert_eq!(plugins[1].name, "plugin_custom");
-        assert_eq!(plugins[1].source, Source::ThirdParty);
+        assert_eq!(plugins[1].source, Source::Official); // No longer differentiating
     }
 
     #[test]
@@ -209,9 +194,9 @@ mod tests {
         // context7 has no projectPath, so path should be the config file
         assert!(context7.path.ends_with("installed_plugins.json"));
 
-        // custom-plugin should be ThirdParty
+        // custom-plugin should also be Official (no source differentiation)
         let custom = plugins.iter().find(|p| p.name == "custom-plugin").unwrap();
-        assert_eq!(custom.source, Source::ThirdParty);
+        assert_eq!(custom.source, Source::Official);
         // custom-plugin has installPath, so path should be that (prioritized over projectPath)
         assert_eq!(
             custom.path,

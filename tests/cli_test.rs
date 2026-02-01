@@ -342,13 +342,12 @@ fn test_short_l_flag_for_detailed_output() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    // Should show detailed output with NAME, SOURCE, DESCRIPTION columns
+    // Should show detailed output with NAME, PATH (for plugins), DESCRIPTION (for others)
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(stdout.contains("NAME"));
-    assert!(stdout.contains("SOURCE"));
+    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
     assert!(stdout.contains("DESCRIPTION"));
     assert!(stdout.contains("context7"));
-    assert!(stdout.contains("official") || stdout.contains("third-party"));
 }
 
 #[test]
@@ -365,13 +364,11 @@ fn test_detailed_output_with_l_flag() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show NAME, SOURCE, DESCRIPTION (no VERSION column)
+    // Should show NAME, PATH (for plugins), DESCRIPTION (no SOURCE column)
     assert!(stdout.contains("NAME"));
-    assert!(stdout.contains("SOURCE"));
+    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
     assert!(stdout.contains("DESCRIPTION"));
-    // Should show source (official/third-party)
-    assert!(stdout.contains("official") || stdout.contains("third-party"));
-    // Should show descriptions (derived from source for plugins)
+    // Should show plugin path
     assert!(stdout.contains("settings.json") || stdout.contains("plugins"));
 }
 
@@ -390,12 +387,10 @@ fn test_detailed_output_shows_skills_description() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show NAME, SOURCE, DESCRIPTION (no VERSION column)
+    // Should show NAME, DESCRIPTION (no SOURCE column)
     assert!(stdout.contains("NAME"));
-    assert!(stdout.contains("SOURCE"));
+    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
     assert!(stdout.contains("DESCRIPTION"));
-    // Should show source (test-skill is third-party due to hyphen in name)
-    assert!(stdout.contains("third-party"));
     // Should show skill description from skill.yaml
     assert!(stdout.contains("A test skill"));
 }
@@ -925,13 +920,11 @@ fn test_detailed_output_works() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show NAME, SOURCE, DESCRIPTION (no VERSION column)
+    // Should show NAME, PATH (for plugins), DESCRIPTION (no SOURCE column)
     assert!(stdout.contains("NAME"));
-    assert!(stdout.contains("SOURCE"));
+    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
     assert!(stdout.contains("DESCRIPTION"));
-    // Should show source
-    assert!(stdout.contains("official") || stdout.contains("third-party"));
-    // Should show descriptions
+    // Should show plugin path
     assert!(stdout.contains("settings.json") || stdout.contains("plugins"));
 }
 
@@ -1411,12 +1404,11 @@ fn test_detailed_output_with_search_and_colors() {
     let stdout = String::from_utf8(output.stdout).unwrap();
 
     assert!(output.status.success());
-    // Should show detailed format (NAME, SOURCE, PATH for plugins)
+    // Should show detailed format (NAME, PATH for plugins, no SOURCE column)
     assert!(stdout.contains("NAME"));
-    assert!(stdout.contains("SOURCE"));
+    assert!(!stdout.contains("SOURCE")); // SOURCE column removed
     assert!(stdout.contains("PATH")); // Plugins show PATH, not DESCRIPTION
-    assert!(stdout.contains("official") || stdout.contains("third-party"));
-    // Should filter by search
+                                      // Should filter by search
     assert!(stdout.contains("context7"));
     // Should not show non-matching plugins
     assert!(!stdout.contains("plugin_test"));

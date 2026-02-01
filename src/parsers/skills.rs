@@ -76,16 +76,10 @@ pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
             }
         }
 
-        let source = if name.starts_with('_') || name.contains('-') {
-            Source::ThirdParty
-        } else {
-            Source::Official
-        };
-
         skills.push(SkillInfo {
             name,
             version,
-            source,
+            source: Source::Official,
             path: skill_path,
             description,
         });
@@ -176,9 +170,9 @@ description: A custom tool for special tasks
             .unwrap()
             .contains("REST and GraphQL"));
 
-        // custom-tool should be ThirdParty (has hyphen)
+        // custom-tool should also be Official (no source differentiation)
         let custom_skill = skills.iter().find(|s| s.name == "custom-tool").unwrap();
-        assert_eq!(custom_skill.source, Source::ThirdParty);
+        assert_eq!(custom_skill.source, Source::Official);
     }
 
     #[test]
@@ -190,7 +184,7 @@ description: A custom tool for special tasks
 
     #[test]
     fn test_skills_source_detection() {
-        // Test source detection based on naming convention
+        // Test that all skills are marked as Official (no source differentiation)
         let dir = TempDir::new().unwrap();
         let path = dir.path();
 
@@ -216,14 +210,10 @@ description: A custom tool for special tasks
         let skills = parse_skills(path).unwrap();
         assert_eq!(skills.len(), 3);
 
-        let official = skills.iter().find(|s| s.name == "officialskill").unwrap();
-        assert_eq!(official.source, Source::Official);
-
-        let unofficial = skills.iter().find(|s| s.name == "_unofficial").unwrap();
-        assert_eq!(unofficial.source, Source::ThirdParty);
-
-        let test = skills.iter().find(|s| s.name == "test-skill").unwrap();
-        assert_eq!(test.source, Source::ThirdParty);
+        // All skills are now Official regardless of naming convention
+        for skill in &skills {
+            assert_eq!(skill.source, Source::Official);
+        }
     }
 
     #[test]
