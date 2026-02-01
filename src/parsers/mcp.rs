@@ -48,6 +48,7 @@ pub fn parse_mcp(base_path: &Path) -> Result<Vec<McpInfo>> {
                 status: "connected".to_string(),
                 command: command.or(args),
                 path: mcp_path.clone(),
+                description: None,
             });
         }
     }
@@ -98,6 +99,7 @@ fn parse_mcp_from_directory(mcp_servers_dir: &Path) -> Result<Vec<McpInfo>> {
             status: "installed".to_string(),
             command,
             path: server_path,
+            description: None,
         });
     }
 

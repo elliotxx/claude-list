@@ -125,6 +125,7 @@ mod tests {
                 version: Some("2.1.0".to_string()),
                 source: Source::Official,
                 path: PathBuf::from("/test/.claude/settings.json"),
+                description: None,
             }],
             skills: vec![SkillInfo {
                 name: "test-skill".to_string(),

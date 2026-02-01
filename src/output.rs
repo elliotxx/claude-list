@@ -206,6 +206,73 @@ pub fn parse_component_type(s: &str) -> Option<ComponentType> {
     }
 }
 
+// ====================
+// Description Truncation
+// ====================
+
+/// Configuration for description truncation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TruncationConfig {
+    /// Maximum display width for description column
+    pub max_description_width: usize,
+    /// Ellipsis string to append when truncating
+    pub ellipsis: &'static str,
+    /// Placeholder when no description available
+    pub no_description_placeholder: &'static str,
+}
+
+impl Default for TruncationConfig {
+    fn default() -> Self {
+        Self {
+            max_description_width: 50,
+            ellipsis: "...",
+            no_description_placeholder: "-",
+        }
+    }
+}
+
+/// Truncate a string to fit within the specified width, appending an ellipsis.
+/// Handles Unicode characters correctly using unicode-width.
+pub fn truncate_with_ellipsis(text: &str, max_width: usize, ellipsis: &str) -> String {
+    if text.is_empty() {
+        return text.to_string();
+    }
+
+    let ellipsis_width = visible_width(ellipsis);
+
+    // If ellipsis itself exceeds max width, return empty string
+    if ellipsis_width >= max_width {
+        return String::new();
+    }
+
+    let available_width = max_width - ellipsis_width;
+    let mut current_width = 0;
+    let mut result = String::new();
+
+    for c in text.chars() {
+        let char_width = c.width().unwrap_or(0);
+        if current_width + char_width <= available_width {
+            result.push(c);
+            current_width += char_width;
+        } else {
+            break;
+        }
+    }
+
+    // Only add ellipsis if we actually truncated
+    if current_width < visible_width(text) {
+        result.push_str(ellipsis);
+    }
+
+    result
+}
+
+/// Format a description with truncation and placeholder handling.
+pub fn format_description(description: Option<&str>, config: TruncationConfig) -> String {
+    let desc = description.unwrap_or(config.no_description_placeholder);
+    truncate_with_ellipsis(desc, config.max_description_width, config.ellipsis)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -273,5 +340,103 @@ mod tests {
         let result = colored_string("test", ComponentType::Plugin, &scheme, &settings);
         // Should contain ANSI codes when colors are enabled
         assert!(result.contains("test"));
+    }
+
+    // ====================
+    // Truncation Tests
+    // ====================
+
+    #[test]
+    fn test_truncation_config_default() {
+        let config = TruncationConfig::default();
+        assert_eq!(config.max_description_width, 50);
+        assert_eq!(config.ellipsis, "...");
+        assert_eq!(config.no_description_placeholder, "-");
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_short_text() {
+        // Text shorter than max width should not be truncated
+        let result = truncate_with_ellipsis("Hello", 50, "...");
+        assert_eq!(result, "Hello");
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_long_text() {
+        // Long text should be truncated
+        let text =
+            "This is a very long description that exceeds fifty characters and should be truncated";
+        let result = truncate_with_ellipsis(text, 50, "...");
+        assert!(result.len() <= 53); // 50 chars + "..."
+        assert!(result.ends_with("..."));
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_empty_text() {
+        let result = truncate_with_ellipsis("", 50, "...");
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_exact_width() {
+        // Text exactly at max width should not need ellipsis
+        // Note: With ellipsis, the available width is 50 - 3 = 47
+        // So 47 chars will fit without truncation
+        let text = "12345678901234567890123456789012345678901234567"; // 47 chars
+        let result = truncate_with_ellipsis(text, 50, "...");
+        assert_eq!(result, text);
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_unicode_cjk() {
+        // CJK characters count as 2 width units each
+        let text = "你好世界这是一个很长的描述"; // Each CJK char is 2 wide
+        let result = truncate_with_ellipsis(text, 10, "...");
+        assert!(result.len() <= 13); // 10 chars width + "..."
+        assert!(result.ends_with("..."));
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_unicode_mixed() {
+        // Mixed ASCII and CJK
+        let text = "Hello世界这是一个很长的描述"; // H(1) + e(1) + l(1) + l(1) + o(1) + 世(2) + 界(2) + ...
+        let result = truncate_with_ellipsis(text, 15, "...");
+        assert!(result.ends_with("..."));
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_single_char() {
+        let result = truncate_with_ellipsis("A", 50, "...");
+        assert_eq!(result, "A");
+    }
+
+    #[test]
+    fn test_truncate_with_ellipsis_narrow_max_width() {
+        // When max width is less than ellipsis width
+        let result = truncate_with_ellipsis("Hello", 2, "...");
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn test_format_description_with_some() {
+        let config = TruncationConfig::default();
+        let result = format_description(Some("Short description"), config);
+        assert_eq!(result, "Short description");
+    }
+
+    #[test]
+    fn test_format_description_with_none() {
+        let config = TruncationConfig::default();
+        let result = format_description(None, config);
+        assert_eq!(result, "-");
+    }
+
+    #[test]
+    fn test_format_description_truncates_long() {
+        let config = TruncationConfig::default();
+        let long_desc = "This is a very long description that definitely exceeds fifty characters";
+        let result = format_description(Some(long_desc), config);
+        assert!(result.ends_with("..."));
+        assert!(result.len() <= 53);
     }
 }

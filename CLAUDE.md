@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2026-01-29
 ## Active Technologies
 - Rust 1.75 + clap (CLI), anstyle (ANSI styling), regex (search matching) (002-colored-output-search)
 - N/A (no data persistence required) (002-colored-output-search)
+- Rust 1.75 + `unicode-width` crate (already available via `unicode-width` dep) (003-detailed-description)
+- N/A (no data persistence change) (003-detailed-description)
 
 - Rust 1.75+ + clap (CLI parsing), serde (JSON handling), anyhow (error handling) (001-claude-list-cli)
 
@@ -74,10 +76,10 @@ Rust 1.75+: Follow standard conventions
 **必须使用 `gitacp` SKILL 进行 git 提交**。执行 `/gitacp` 命令来自动生成提交信息并完成提交。
 
 ## Recent Changes
+- 003-detailed-description: Added Rust 1.75 + `unicode-width` crate (already available via `unicode-width` dep)
 - 002-colored-output-search: Added Rust 1.75 + clap (CLI), anstyle (ANSI styling), regex (search matching)
 
 - 001-claude-list-cli: Added Rust 1.75+ + clap (CLI parsing), serde (JSON handling), anyhow (error handling)
-- 001-claude-list-cli: Implemented User Story 1 - Compact output mode
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

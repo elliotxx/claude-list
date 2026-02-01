@@ -24,9 +24,9 @@
 
 **Purpose**: Project initialization - create utilities needed by all user stories
 
-- [ ] T001 [P] Create: TruncationConfig struct in src/output.rs @src/output.rs
-- [ ] T002 [P] Create: truncate_with_ellipsis function using unicode-width @src/output.rs
-- [ ] T003 [P] Create: DescriptionProvider trait for all component types @src/info.rs
+- [x] T001 [P] Create: TruncationConfig struct in src/output.rs @src/output.rs
+- [x] T002 [P] Create: truncate_with_ellipsis function using unicode-width @src/output.rs
+- [x] T003 [P] Create: DescriptionProvider trait for all component types @src/info.rs
 
 **Checkpoint**: Truncation utility ready for all stories
 
@@ -36,15 +36,15 @@
 
 **Purpose**: Add description fields to data structures used by all components
 
-- [ ] T010 Add: description field to PluginInfo struct @src/info.rs
-- [ ] T011 Add: description field to McpInfo struct @src/info.rs
-- [ ] T012 Add: description field to HookInfo struct @src/info.rs
-- [ ] T013 Add: DescriptionProvider impl for PluginInfo @src/info.rs
-- [ ] T014 Add: DescriptionProvider impl for McpInfo @src/info.rs
-- [ ] T015 Add: DescriptionProvider impl for HookInfo @src/info.rs
-- [ ] T016 Add: DescriptionProvider impl for SkillInfo @src/info.rs
-- [ ] T017 Add: DescriptionProvider impl for AgentInfo @src/info.rs
-- [ ] T018 Add: DescriptionProvider impl for CommandInfo @src/info.rs
+- [x] T010 Add: description field to PluginInfo struct @src/info.rs
+- [x] T011 Add: description field to McpInfo struct @src/info.rs
+- [x] T012 Add: description field to HookInfo struct @src/info.rs
+- [x] T013 Add: DescriptionProvider impl for PluginInfo @src/info.rs
+- [x] T014 Add: DescriptionProvider impl for McpInfo @src/info.rs
+- [x] T015 Add: DescriptionProvider impl for HookInfo @src/info.rs
+- [x] T016 Add: DescriptionProvider impl for SkillInfo @src/info.rs
+- [x] T017 Add: DescriptionProvider impl for AgentInfo @src/info.rs
+- [x] T018 Add: DescriptionProvider impl for CommandInfo @src/info.rs
 
 **Checkpoint**: All components can provide descriptions
 
@@ -58,19 +58,19 @@
 
 #### Implementation
 
-- [ ] T020 [US1] Modify: Rewrite PLUGINS section in format_detailed @src/formatters/detailed.rs
-- [ ] T021 [US1] Modify: Rewrite SKILLS section in format_detailed @src/formatters/detailed.rs
-- [ ] T022 [US1] Modify: Rewrite MCP section to show STATUS and DESCRIPTION @src/formatters/detailed.rs
-- [ ] T023 [US1] Modify: Rewrite HOOKS section to show TYPE and DESCRIPTION @src/formatters/detailed.rs
-- [ ] T024 [US1] Modify: Keep AGENTS section (already has DESCRIPTION) @src/formatters/detailed.rs
-- [ ] T025 [US1] Modify: Keep COMMANDS section (already has DESCRIPTION) @src/formatters/detailed.rs
+- [x] T020 [US1] Modify: Rewrite PLUGINS section in format_detailed @src/formatters/detailed.rs
+- [x] T021 [US1] Modify: Rewrite SKILLS section in format_detailed @src/formatters/detailed.rs
+- [x] T022 [US1] Modify: Rewrite MCP section to show STATUS and DESCRIPTION @src/formatters/detailed.rs
+- [x] T023 [US1] Modify: Rewrite HOOKS section to show TYPE and DESCRIPTION @src/formatters/detailed.rs
+- [x] T024 [US1] Modify: Keep AGENTS section (already has DESCRIPTION) @src/formatters/detailed.rs
+- [x] T025 [US1] Modify: Keep COMMANDS section (already has DESCRIPTION) @src/formatters/detailed.rs
 
 #### Tests
 
-- [ ] T030 [US1] Test: Unit test for PLUGINS output format @src/formatters/detailed.rs
-- [ ] T031 [US1] Test: Unit test for SKILLS output format @src/formatters/detailed.rs
-- [ ] T032 [US1] Test: Integration test: --long shows correct columns @tests/cli_test.rs
-- [ ] T033 [US1] Test: Integration test: --long with plugins filter @tests/cli_test.rs
+- [x] T030 [US1] Test: Unit test for PLUGINS output format @src/formatters/detailed.rs
+- [x] T031 [US1] Test: Unit test for SKILLS output format @src/formatters/detailed.rs
+- [x] T032 [US1] Test: Integration test: --long shows correct columns @tests/cli_test.rs
+- [x] T033 [US1] Test: Integration test: --long with plugins filter @tests/cli_test.rs
 
 **Checkpoint**: US1 complete - `claude-list --long` shows NAME, SOURCE, DESCRIPTION
 
@@ -84,15 +84,15 @@
 
 #### Implementation
 
-- [ ] T040 [US2] Verify: truncate_with_ellipsis handles Unicode correctly @src/output.rs
-- [ ] T041 [US2] Modify: Apply truncation to all description fields in detailed formatter @src/formatters/detailed.rs
+- [x] T040 [US2] Verify: truncate_with_ellipsis handles Unicode correctly @src/output.rs
+- [x] T041 [US2] Modify: Apply truncation to all description fields in detailed formatter @src/formatters/detailed.rs
 
 #### Tests
 
-- [ ] T050 [US2] Test: Unit test for truncation with ASCII text @src/output.rs
-- [ ] T051 [US2] Test: Unit test for truncation with Unicode/CJK characters @src/output.rs
-- [ ] T052 [US2] Test: Integration test: long description truncated @tests/cli_test.rs
-- [ ] T053 [US2] Test: Integration test: short description not truncated @tests/cli_test.rs
+- [x] T050 [US2] Test: Unit test for truncation with ASCII text @src/output.rs
+- [x] T051 [US2] Test: Unit test for truncation with Unicode/CJK characters @src/output.rs
+- [x] T052 [US2] Test: Integration test: long description truncated @tests/cli_test.rs
+- [x] T053 [US2] Test: Integration test: short description not truncated @tests/cli_test.rs
 
 **Checkpoint**: US2 complete - descriptions over 50 chars show "..."
 
@@ -106,14 +106,14 @@
 
 #### Implementation
 
-- [ ] T060 [US3] Verify: Plugin description shows "Official/Third-party plugin" @src/formatters/detailed.rs
-- [ ] T061 [US3] Verify: MCP description shows "{status} MCP server" @src/formatters/detailed.rs
-- [ ] T062 [US3] Verify: Hook description shows "{type} hook" @src/formatters/detailed.rs
+- [x] T060 [US3] Verify: Plugin description shows "Official/Third-party plugin" @src/formatters/detailed.rs
+- [x] T061 [US3] Verify: MCP description shows "{status} MCP server" @src/formatters/detailed.rs
+- [x] T062 [US3] Verify: Hook description shows "{type} hook" @src/formatters/detailed.rs
 
 #### Tests
 
-- [ ] T070 [US3] Test: Integration test: all component types show descriptions @tests/cli_test.rs
-- [ ] T071 [US3] Test: Integration test: empty description shows "-" placeholder @tests/cli_test.rs
+- [x] T070 [US3] Test: Integration test: all component types show descriptions @tests/cli_test.rs
+- [x] T071 [US3] Test: Integration test: empty description shows "-" placeholder @tests/cli_test.rs
 
 **Checkpoint**: US3 complete - all 6 types show descriptions
 
@@ -123,7 +123,7 @@
 
 **Purpose**: Final validation and cleanup
 
-- [ ] T080 Run: make check (fmt, clippy, test) @project root
+- [x] T080 Run: make check (fmt, clippy, test) @project root
 - [ ] T081 Update: quickstart.md with new output examples @specs/003-detailed-description/quickstart.md
 - [ ] T082 Update: Integration test snapshots if using insta @tests/
 
@@ -131,17 +131,18 @@
 
 ## Summary
 
-| Phase | User Story | Tasks | Description |
-|-------|------------|-------|-------------|
-| 1 | - | 3 | Setup (utilities) |
-| 2 | - | 9 | Data model changes |
-| 3 | US1 | 8 | Enhanced detailed output |
-| 4 | US2 | 4 | Description truncation |
-| 5 | US3 | 4 | All component types |
-| 6 | - | 3 | Polish & validation |
+| Phase | User Story | Tasks | Description | Status |
+|-------|------------|-------|-------------|--------|
+| 1 | - | 3 | Setup (utilities) | ✅ Complete |
+| 2 | - | 9 | Data model changes | ✅ Complete |
+| 3 | US1 | 8 | Enhanced detailed output | ✅ Complete |
+| 4 | US2 | 4 | Description truncation | ✅ Complete |
+| 5 | US3 | 4 | All component types | ✅ Complete |
+| 6 | - | 3 | Polish & validation | ⚠️ Partial |
 
 **Total Tasks**: 31
-**Parallelizable Tasks**: 3 (T001, T002, T003)
+**Completed**: 29
+**Remaining**: 2 (documentation updates)
 
 ---
 

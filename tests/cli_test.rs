@@ -342,9 +342,13 @@ fn test_short_l_flag_for_detailed_output() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    // Should show detailed output with version info
+    // Should show detailed output with NAME, SOURCE, DESCRIPTION columns
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    assert!(stdout.contains("NAME"));
+    assert!(stdout.contains("SOURCE"));
+    assert!(stdout.contains("DESCRIPTION"));
+    assert!(stdout.contains("context7"));
+    assert!(stdout.contains("official") || stdout.contains("third-party"));
 }
 
 #[test]
@@ -361,14 +365,18 @@ fn test_detailed_output_with_l_flag() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show version numbers
-    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    // Should show NAME, SOURCE, DESCRIPTION (no VERSION column)
+    assert!(stdout.contains("NAME"));
+    assert!(stdout.contains("SOURCE"));
+    assert!(stdout.contains("DESCRIPTION"));
     // Should show source (official/third-party)
     assert!(stdout.contains("official") || stdout.contains("third-party"));
+    // Should show descriptions (derived from source for plugins)
+    assert!(stdout.contains("Official plugin") || stdout.contains("Third-party plugin"));
 }
 
 #[test]
-fn test_detailed_output_shows_skills_version() {
+fn test_detailed_output_shows_skills_description() {
     let dir = TempDir::new().unwrap();
     let claude_dir = create_mock_claude_dir(&dir);
 
@@ -382,10 +390,14 @@ fn test_detailed_output_shows_skills_version() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show version
-    assert!(stdout.contains("1.0.0"));
+    // Should show NAME, SOURCE, DESCRIPTION (no VERSION column)
+    assert!(stdout.contains("NAME"));
+    assert!(stdout.contains("SOURCE"));
+    assert!(stdout.contains("DESCRIPTION"));
     // Should show source (test-skill is third-party due to hyphen in name)
     assert!(stdout.contains("third-party"));
+    // Should show skill description from skill.yaml
+    assert!(stdout.contains("A test skill"));
 }
 
 #[test]
@@ -913,10 +925,14 @@ fn test_detailed_output_works() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Should show version numbers
-    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    // Should show NAME, SOURCE, DESCRIPTION (no VERSION column)
+    assert!(stdout.contains("NAME"));
+    assert!(stdout.contains("SOURCE"));
+    assert!(stdout.contains("DESCRIPTION"));
     // Should show source
     assert!(stdout.contains("official") || stdout.contains("third-party"));
+    // Should show descriptions
+    assert!(stdout.contains("Official plugin") || stdout.contains("Third-party plugin"));
 }
 
 // ==================== Fixtures Verification Tests ====================
@@ -1395,8 +1411,10 @@ fn test_detailed_output_with_search_and_colors() {
     let stdout = String::from_utf8(output.stdout).unwrap();
 
     assert!(output.status.success());
-    // Should show detailed format (with version, source, path)
-    assert!(stdout.contains("2.1.0") || stdout.contains("1.0.0"));
+    // Should show detailed format (with NAME, SOURCE, DESCRIPTION, no VERSION)
+    assert!(stdout.contains("NAME"));
+    assert!(stdout.contains("SOURCE"));
+    assert!(stdout.contains("DESCRIPTION"));
     assert!(stdout.contains("official") || stdout.contains("third-party"));
     // Should filter by search
     assert!(stdout.contains("context7"));
@@ -1433,7 +1451,8 @@ fn test_all_output_modes_with_search() {
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(output.status.success());
     assert!(stdout.contains("context7"));
-    assert!(stdout.contains("VERSION"));
+    assert!(stdout.contains("NAME"));
+    assert!(stdout.contains("DESCRIPTION"));
 
     // JSON mode with search
     let mut cmd = Command::cargo_bin("claude-list").unwrap();

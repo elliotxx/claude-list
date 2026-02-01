@@ -50,6 +50,7 @@ pub fn parse_hooks(base_path: &Path) -> Result<Vec<HookInfo>> {
             name,
             hook_type,
             path: hook_path,
+            description: None,
         });
     }
 

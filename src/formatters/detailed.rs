@@ -1,10 +1,19 @@
 //! Detailed output formatter (for -l flag)
+//!
+//! Output format: NAME, SOURCE, DESCRIPTION instead of NAME, VERSION, SOURCE, PATH
 
-use crate::info::ClaudeInfo;
+use crate::info::{ClaudeInfo, DescriptionProvider};
 use crate::output::{
-    write_colored_padded_field, Alignment, ColorScheme, ColorSettings, ComponentType,
+    truncate_with_ellipsis, write_colored_padded_field, Alignment, ColorScheme, ColorSettings,
+    ComponentType,
 };
 use std::io::Write;
+
+const NAME_WIDTH: usize = 30;
+const SOURCE_WIDTH: usize = 15;
+const STATUS_WIDTH: usize = 18;
+const TYPE_WIDTH: usize = 18;
+const DESC_WIDTH: usize = 50;
 
 pub fn format_detailed(
     info: &ClaudeInfo,
@@ -20,25 +29,20 @@ pub fn format_detailed(
     // PLUGINS
     if !info.plugins.is_empty() {
         writeln!(output, "PLUGINS    {} installed", info.plugins.len())?;
+        writeln!(output, "  {:<30} {:<15} DESCRIPTION", "NAME", "SOURCE")?;
         writeln!(
             output,
-            "  {:<30} {:>18} {:<15} PATH",
-            "NAME", "VERSION", "SOURCE"
-        )?;
-        writeln!(
-            output,
-            "  {:<30} {:>18} {:<15} {}",
-            "-".repeat(30),
-            "-".repeat(18),
-            "-".repeat(15),
-            "-".repeat(30)
+            "  {:<30} {:<15} {}",
+            "-".repeat(NAME_WIDTH),
+            "-".repeat(SOURCE_WIDTH),
+            "-".repeat(DESC_WIDTH)
         )?;
         for plugin in &info.plugins {
-            let version = plugin.version.as_deref().unwrap_or("-");
             let source = match plugin.source {
                 crate::info::Source::Official => "official",
                 crate::info::Source::ThirdParty => "third-party",
             };
+            let description = plugin.get_description().unwrap_or_default();
             write!(output, "  ")?;
             write_colored_padded_field(
                 output,
@@ -46,30 +50,22 @@ pub fn format_detailed(
                 ComponentType::Plugin,
                 color_scheme,
                 color_settings,
-                30,
+                NAME_WIDTH,
                 Alignment::Left,
             )?;
-            write_colored_padded_field(
-                output,
-                version,
-                ComponentType::Version,
-                color_scheme,
-                color_settings,
-                18,
-                Alignment::Right,
-            )?;
-            write!(output, " ")?;
             write_colored_padded_field(
                 output,
                 source,
                 ComponentType::Plugin,
                 color_scheme,
                 color_settings,
-                15,
+                SOURCE_WIDTH,
                 Alignment::Left,
             )?;
-            write!(output, " {}", plugin.path.display())?;
-            writeln!(output)?;
+            write!(output, " ")?;
+            // Apply truncation to description
+            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
+            writeln!(output, "{}", truncated_desc)?;
         }
         writeln!(output)?;
     }
@@ -77,25 +73,20 @@ pub fn format_detailed(
     // SKILLS
     if !info.skills.is_empty() {
         writeln!(output, "SKILLS     {} available", info.skills.len())?;
+        writeln!(output, "  {:<30} {:<15} DESCRIPTION", "NAME", "SOURCE")?;
         writeln!(
             output,
-            "  {:<30} {:>18} {:<15} PATH",
-            "NAME", "VERSION", "SOURCE"
-        )?;
-        writeln!(
-            output,
-            "  {:<30} {:>18} {:<15} {}",
-            "-".repeat(30),
-            "-".repeat(18),
-            "-".repeat(15),
-            "-".repeat(30)
+            "  {:<30} {:<15} {}",
+            "-".repeat(NAME_WIDTH),
+            "-".repeat(SOURCE_WIDTH),
+            "-".repeat(DESC_WIDTH)
         )?;
         for skill in &info.skills {
-            let version = skill.version.as_deref().unwrap_or("-");
             let source = match skill.source {
                 crate::info::Source::Official => "official",
                 crate::info::Source::ThirdParty => "third-party",
             };
+            let description = skill.get_description().unwrap_or_default();
             write!(output, "  ")?;
             write_colored_padded_field(
                 output,
@@ -103,30 +94,21 @@ pub fn format_detailed(
                 ComponentType::Skill,
                 color_scheme,
                 color_settings,
-                30,
+                NAME_WIDTH,
                 Alignment::Left,
             )?;
-            write_colored_padded_field(
-                output,
-                version,
-                ComponentType::Version,
-                color_scheme,
-                color_settings,
-                18,
-                Alignment::Right,
-            )?;
-            write!(output, " ")?;
             write_colored_padded_field(
                 output,
                 source,
                 ComponentType::Skill,
                 color_scheme,
                 color_settings,
-                15,
+                SOURCE_WIDTH,
                 Alignment::Left,
             )?;
-            write!(output, " {}", skill.path.display())?;
-            writeln!(output)?;
+            write!(output, " ")?;
+            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
+            writeln!(output, "{}", truncated_desc)?;
         }
         writeln!(output)?;
     }
@@ -143,23 +125,38 @@ pub fn format_detailed(
     // MCP
     if !info.mcp_servers.is_empty() {
         writeln!(output, "MCP        {} servers", info.mcp_servers.len())?;
-        writeln!(output, "  {:<30} {:<18} PATH", "NAME", "STATUS")?;
+        writeln!(output, "  {:<30} {:<18} DESCRIPTION", "NAME", "STATUS")?;
         writeln!(
             output,
             "  {:<30} {:<18} {}",
-            "-".repeat(30),
-            "-".repeat(18),
-            "-".repeat(30)
+            "-".repeat(NAME_WIDTH),
+            "-".repeat(STATUS_WIDTH),
+            "-".repeat(DESC_WIDTH)
         )?;
         for mcp in &info.mcp_servers {
-            // Name not colored to maintain alignment
-            writeln!(
+            let description = mcp.get_description().unwrap_or_default();
+            write!(output, "  ")?;
+            write_colored_padded_field(
                 output,
-                "  {:<30} {:<18} {}",
-                mcp.name,
-                mcp.status,
-                mcp.path.display()
+                &mcp.name,
+                ComponentType::Mcp,
+                color_scheme,
+                color_settings,
+                NAME_WIDTH,
+                Alignment::Left,
             )?;
+            write_colored_padded_field(
+                output,
+                &mcp.status,
+                ComponentType::Mcp,
+                color_scheme,
+                color_settings,
+                STATUS_WIDTH,
+                Alignment::Left,
+            )?;
+            write!(output, " ")?;
+            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
+            writeln!(output, "{}", truncated_desc)?;
         }
         writeln!(output)?;
     }
@@ -167,23 +164,38 @@ pub fn format_detailed(
     // HOOKS
     if !info.hooks.is_empty() {
         writeln!(output, "HOOKS      {} configured", info.hooks.len())?;
-        writeln!(output, "  {:<30} {:<18} PATH", "NAME", "TYPE")?;
+        writeln!(output, "  {:<30} {:<18} DESCRIPTION", "NAME", "TYPE")?;
         writeln!(
             output,
             "  {:<30} {:<18} {}",
-            "-".repeat(30),
-            "-".repeat(18),
-            "-".repeat(30)
+            "-".repeat(NAME_WIDTH),
+            "-".repeat(TYPE_WIDTH),
+            "-".repeat(DESC_WIDTH)
         )?;
         for hook in &info.hooks {
-            // Name not colored to maintain alignment
-            writeln!(
+            let description = hook.get_description().unwrap_or_default();
+            write!(output, "  ")?;
+            write_colored_padded_field(
                 output,
-                "  {:<30} {:<18} {}",
-                hook.name,
-                hook.hook_type,
-                hook.path.display()
+                &hook.name,
+                ComponentType::Hook,
+                color_scheme,
+                color_settings,
+                NAME_WIDTH,
+                Alignment::Left,
             )?;
+            write_colored_padded_field(
+                output,
+                &hook.hook_type,
+                ComponentType::Hook,
+                color_scheme,
+                color_settings,
+                TYPE_WIDTH,
+                Alignment::Left,
+            )?;
+            write!(output, " ")?;
+            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
+            writeln!(output, "{}", truncated_desc)?;
         }
         writeln!(output)?;
     }
@@ -192,11 +204,27 @@ pub fn format_detailed(
     if !info.agents.is_empty() {
         writeln!(output, "AGENTS     {} defined", info.agents.len())?;
         writeln!(output, "  {:<30} DESCRIPTION", "NAME")?;
-        writeln!(output, "  {:<30} {}", "-".repeat(30), "-".repeat(50))?;
+        writeln!(
+            output,
+            "  {:<30} {}",
+            "-".repeat(NAME_WIDTH),
+            "-".repeat(DESC_WIDTH)
+        )?;
         for agent in &info.agents {
-            let desc = agent.description.as_deref().unwrap_or("-");
-            // Name not colored to maintain alignment
-            writeln!(output, "  {:<30} {}", agent.name, desc)?;
+            let description = agent.get_description().unwrap_or_default();
+            write!(output, "  ")?;
+            write_colored_padded_field(
+                output,
+                &agent.name,
+                ComponentType::Agent,
+                color_scheme,
+                color_settings,
+                NAME_WIDTH,
+                Alignment::Left,
+            )?;
+            write!(output, " ")?;
+            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
+            writeln!(output, "{}", truncated_desc)?;
         }
         writeln!(output)?;
     }
@@ -205,11 +233,27 @@ pub fn format_detailed(
     if !info.commands.is_empty() {
         writeln!(output, "COMMANDS   {} available", info.commands.len())?;
         writeln!(output, "  {:<30} DESCRIPTION", "NAME")?;
-        writeln!(output, "  {:<30} {}", "-".repeat(30), "-".repeat(50))?;
+        writeln!(
+            output,
+            "  {:<30} {}",
+            "-".repeat(NAME_WIDTH),
+            "-".repeat(DESC_WIDTH)
+        )?;
         for cmd in &info.commands {
-            let desc = cmd.description.as_deref().unwrap_or("-");
-            // Name not colored to maintain alignment
-            writeln!(output, "  /{:<29} {}", cmd.name, desc)?;
+            let description = cmd.get_description().unwrap_or_default();
+            write!(output, "  ")?;
+            write_colored_padded_field(
+                output,
+                &cmd.name,
+                ComponentType::Command,
+                color_scheme,
+                color_settings,
+                NAME_WIDTH,
+                Alignment::Left,
+            )?;
+            write!(output, " ")?;
+            let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
+            writeln!(output, "{}", truncated_desc)?;
         }
     }
 
@@ -219,11 +263,13 @@ pub fn format_detailed(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::info::{McpInfo, PluginInfo, SessionInfo, SkillInfo, Source};
+    use crate::info::{
+        AgentInfo, CommandInfo, HookInfo, McpInfo, PluginInfo, SessionInfo, SkillInfo, Source,
+    };
     use std::path::PathBuf;
 
     #[test]
-    fn test_format_detailed() {
+    fn test_format_detailed_plugins_output() {
         let info = ClaudeInfo {
             version: "0.1.0".to_string(),
             config_dir: PathBuf::from("/test/.claude"),
@@ -232,7 +278,43 @@ mod tests {
                 version: Some("2.1.0".to_string()),
                 source: Source::Official,
                 path: PathBuf::from("/test/.claude/settings.json"),
+                description: None,
             }],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        // Verify new format: NAME, SOURCE, DESCRIPTION (no VERSION, no PATH)
+        assert!(output.contains("NAME"));
+        assert!(output.contains("SOURCE"));
+        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("context7"));
+        assert!(output.contains("official"));
+        assert!(output.contains("Official plugin")); // Derived description
+        assert!(!output.contains("2.1.0")); // VERSION should not appear
+        assert!(!output.contains("PATH"));
+    }
+
+    #[test]
+    fn test_format_detailed_skills_output() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
             skills: vec![SkillInfo {
                 name: "test-skill".to_string(),
                 version: Some("1.0.0".to_string()),
@@ -241,14 +323,48 @@ mod tests {
                 description: Some("A test skill".to_string()),
             }],
             sessions: SessionInfo {
-                count: 42,
-                last_session: Some("2025-01-29T10:00:00Z".to_string()),
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("NAME"));
+        assert!(output.contains("SOURCE"));
+        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("test-skill"));
+        assert!(output.contains("official"));
+        assert!(output.contains("A test skill")); // Skill description
+        assert!(!output.contains("1.0.0")); // VERSION should not appear
+    }
+
+    #[test]
+    fn test_format_detailed_mcp_output() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
             },
             mcp_servers: vec![McpInfo {
                 name: "test-mcp".to_string(),
                 status: "connected".to_string(),
                 command: Some("npx".to_string()),
                 path: PathBuf::from("/test/.claude/mcp.json"),
+                description: None,
             }],
             hooks: vec![],
             agents: vec![],
@@ -256,18 +372,190 @@ mod tests {
         };
 
         let color_scheme = ColorScheme::default();
-        let color_settings = ColorSettings::from_env();
+        let color_settings = ColorSettings::force();
 
         let mut buffer = Vec::new();
         format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
         let output = String::from_utf8(buffer).unwrap();
 
-        // Verify detailed format includes version and source
-        assert!(output.contains("2.1.0"));
-        assert!(output.contains("official"));
-        assert!(output.contains("test-skill"));
         assert!(output.contains("NAME"));
-        assert!(output.contains("VERSION"));
-        assert!(output.contains("SOURCE"));
+        assert!(output.contains("STATUS"));
+        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("test-mcp"));
+        assert!(output.contains("connected"));
+        assert!(output.contains("connected MCP server")); // Derived description
+        assert!(!output.contains("PATH"));
+    }
+
+    #[test]
+    fn test_format_detailed_hooks_output() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![HookInfo {
+                name: "pre-commit".to_string(),
+                hook_type: "pre-commit".to_string(),
+                path: PathBuf::from("/test/.claude/hooks/pre-commit.md"),
+                description: None,
+            }],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("NAME"));
+        assert!(output.contains("TYPE"));
+        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("pre-commit"));
+        assert!(output.contains("pre-commit hook")); // Derived description
+        assert!(!output.contains("PATH"));
+    }
+
+    #[test]
+    fn test_format_detailed_agents_output() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![AgentInfo {
+                name: "database-agent".to_string(),
+                description: Some("Agent for database operations".to_string()),
+                path: PathBuf::from("/test/.claude/agents/database-agent.md"),
+            }],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("NAME"));
+        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("database-agent"));
+        assert!(output.contains("Agent for database operations"));
+    }
+
+    #[test]
+    fn test_format_detailed_commands_output() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![CommandInfo {
+                name: "analyze-code".to_string(),
+                description: Some("Analyze code quality".to_string()),
+                allowed_tools: None,
+                argument_hint: None,
+                path: PathBuf::from("/test/.claude/commands/analyze-code.md"),
+            }],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("NAME"));
+        assert!(output.contains("DESCRIPTION"));
+        assert!(output.contains("analyze-code"));
+        assert!(output.contains("Analyze code quality"));
+    }
+
+    #[test]
+    fn test_format_detailed_truncates_long_description() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![PluginInfo {
+                name: "test-plugin".to_string(),
+                version: Some("1.0.0".to_string()),
+                source: Source::Official,
+                path: PathBuf::from("/test/.claude/settings.json"),
+                description: Some("This is a very long description that definitely exceeds fifty characters and should be truncated".to_string()),
+            }],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        // Should contain truncated description with "..."
+        assert!(output.contains("..."));
+        // The full description should not appear
+        assert!(!output.contains("definitely exceeds fifty characters and should be truncated"));
+    }
+
+    #[test]
+    fn test_format_detailed_empty_sections() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::force();
+
+        let mut buffer = Vec::new();
+        format_detailed(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        // Should only show header, no section headers
+        assert!(output.contains("CLAUDE-LIST"));
+        assert!(output.contains("CONFIG:"));
     }
 }

@@ -52,6 +52,7 @@ pub fn parse_plugins(base_path: &Path) -> Result<Vec<PluginInfo>> {
                         version,
                         source,
                         path: settings_path.clone(),
+                        description: None,
                     })
                 })
                 .collect()
@@ -102,6 +103,7 @@ fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
                         version,
                         source,
                         path: installed_path.to_path_buf(),
+                        description: None,
                     });
                 }
             }
