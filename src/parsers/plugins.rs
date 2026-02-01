@@ -4,7 +4,7 @@ use crate::error::Result;
 use crate::info::{PluginInfo, Source};
 use serde_json::Value;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub fn parse_plugins(base_path: &Path) -> Result<Vec<PluginInfo>> {
     // Try new format: plugins/installed_plugins.json
@@ -98,11 +98,25 @@ fn parse_plugins_v2(installed_path: &Path) -> Result<Vec<PluginInfo>> {
                         .and_then(|v| v.as_str())
                         .map(String::from);
 
+                    // Use installPath for actual plugin installation location,
+                    // fall back to projectPath (project root), then config file
+                    let path = first
+                        .get("installPath")
+                        .and_then(|v| v.as_str())
+                        .map(PathBuf::from)
+                        .or_else(|| {
+                            first
+                                .get("projectPath")
+                                .and_then(|v| v.as_str())
+                                .map(PathBuf::from)
+                        })
+                        .unwrap_or_else(|| installed_path.to_path_buf());
+
                     plugins.push(PluginInfo {
                         name,
                         version,
                         source,
-                        path: installed_path.to_path_buf(),
+                        path,
                         description: None,
                     });
                 }
@@ -172,6 +186,7 @@ mod tests {
                     {
                         "scope": "project",
                         "version": "1.0.0",
+                        "installPath": "/test/.claude/plugins/cache/custom-source/custom-plugin/1.0.0",
                         "projectPath": "/test"
                     }
                 ]
@@ -191,10 +206,17 @@ mod tests {
         // context7 should be Official
         let context7 = plugins.iter().find(|p| p.name == "context7").unwrap();
         assert_eq!(context7.source, Source::Official);
+        // context7 has no projectPath, so path should be the config file
+        assert!(context7.path.ends_with("installed_plugins.json"));
 
         // custom-plugin should be ThirdParty
         let custom = plugins.iter().find(|p| p.name == "custom-plugin").unwrap();
         assert_eq!(custom.source, Source::ThirdParty);
+        // custom-plugin has installPath, so path should be that (prioritized over projectPath)
+        assert_eq!(
+            custom.path,
+            PathBuf::from("/test/.claude/plugins/cache/custom-source/custom-plugin/1.0.0")
+        );
     }
 
     #[test]

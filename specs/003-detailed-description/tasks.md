@@ -64,6 +64,10 @@
 - [x] T023 [US1] Modify: Rewrite HOOKS section to show TYPE and DESCRIPTION @src/formatters/detailed.rs
 - [x] T024 [US1] Modify: Keep AGENTS section (already has DESCRIPTION) @src/formatters/detailed.rs
 - [x] T025 [US1] Modify: Keep COMMANDS section (already has DESCRIPTION) @src/formatters/detailed.rs
+- [x] T026 [US1] Fix: Use installPath for plugin PATH (actual cache location) @src/parsers/plugins.rs
+
+**Note**: Plugin section shows PATH instead of DESCRIPTION (to avoid redundancy with SOURCE column).
+PATH shows actual plugin installation location: installPath > projectPath > config file path.
 
 #### Tests
 
@@ -135,13 +139,13 @@
 |-------|------------|-------|-------------|--------|
 | 1 | - | 3 | Setup (utilities) | ✅ Complete |
 | 2 | - | 9 | Data model changes | ✅ Complete |
-| 3 | US1 | 8 | Enhanced detailed output | ✅ Complete |
+| 3 | US1 | 9 | Enhanced detailed output | ✅ Complete |
 | 4 | US2 | 4 | Description truncation | ✅ Complete |
 | 5 | US3 | 4 | All component types | ✅ Complete |
 | 6 | - | 3 | Polish & validation | ⚠️ Partial |
 
-**Total Tasks**: 31
-**Completed**: 29
+**Total Tasks**: 32
+**Completed**: 30
 **Remaining**: 2 (documentation updates)
 
 ---
