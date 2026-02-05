@@ -88,7 +88,7 @@ pub fn format_detailed(
                 color_scheme,
                 color_settings,
                 25,
-                Alignment::Left,
+                Alignment::Right,
             )?;
             write!(output, " ")?;
             let truncated_desc = truncate_with_ellipsis(&description, DESC_WIDTH, "...");
