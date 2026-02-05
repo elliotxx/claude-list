@@ -112,7 +112,7 @@ pub fn format_compact(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::info::{PluginInfo, SessionInfo, SkillInfo, Source};
+    use crate::info::{PluginInfo, SessionInfo, SkillInfo, SkillLocation, Source};
     use std::path::PathBuf;
 
     #[test]

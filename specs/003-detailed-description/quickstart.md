@@ -1,7 +1,7 @@
 # Quickstart Guide: Detailed Output with Description
 
 **Feature**: 003-detailed-description
-**Date**: 2026-02-01
+**Date**: 2026-02-05
 
 ## Overview
 
@@ -9,23 +9,30 @@ This guide covers the enhanced `--long` (`-l`) output format with description co
 
 ## New Feature: Description Column
 
-### Before
+### Before (Compact Mode)
 
 ```bash
-$ claude-list --long
+$ claude-list
 PLUGINS    2 installed
-  NAME                            VERSION          SOURCE         PATH
-  ...
+  context7
+  my-plugin
+
+SKILLS     3 available
+  test-skill
 ```
 
-### After
+### After (Detailed Mode)
 
 ```bash
 $ claude-list --long
 PLUGINS    2 installed
-  NAME                            SOURCE         DESCRIPTION
-  ...
-  context7                        official       Official plugin
+  NAME                           PATH
+  ------------------------------ --------------------------------------------------
+  context7                       /Users/test/.claude/plugins/cache/...
+
+SKILLS     3 available
+  NAME                           SOURCE          DESCRIPTION
+  test-skill                     global          A test skill for demo...
 ```
 
 ## Usage
@@ -33,7 +40,7 @@ PLUGINS    2 installed
 ### Basic Usage
 
 ```bash
-# Show detailed output with descriptions
+# Show detailed output
 claude-list --long
 
 # Short flag also works
@@ -46,39 +53,60 @@ claude-list --long --search context
 claude-list --long --plugins
 ```
 
-### Output Columns
+### Output Columns by Component
 
-| Column | Description |
-|--------|-------------|
-| NAME | Component name (30 chars, colored) |
-| SOURCE | "official" or "third-party" (15 chars) |
-| DESCRIPTION | Component description (50 chars, truncated with "...") |
+#### Plugins
+| Column | Width | Description |
+|--------|-------|-------------|
+| NAME | 30 chars | Plugin name (colored) |
+| PATH | 80 chars | Full path to plugin directory |
 
-### Description Sources
+#### Skills
+| Column | Width | Description |
+|--------|-------|-------------|
+| NAME | 30 chars | Skill name (colored) |
+| SOURCE | 25 chars | "global" or plugin name |
+| DESCRIPTION | 50 chars | From skill.yaml (truncated with "...") |
 
-| Component | Description |
-|-----------|-------------|
-| Plugin | "Official plugin" or "Third-party plugin" |
-| Skill | From skill.yaml description field |
-| MCP | "{status} MCP server" |
-| Hook | "{type} hook" |
-| Agent | From agent markdown description |
-| Command | From command markdown description |
+#### MCP Servers
+| Column | Width | Description |
+|--------|-------|-------------|
+| NAME | 30 chars | MCP server name (colored) |
+| STATUS | 18 chars | Server status |
+| DESCRIPTION | 50 chars | Derived: "{status} MCP server" |
 
-### Truncation Example
+#### Hooks
+| Column | Width | Description |
+|--------|-------|-------------|
+| NAME | 30 chars | Hook name (colored) |
+| TYPE | 18 chars | Hook type |
+| DESCRIPTION | 50 chars | Derived: "{type} hook" |
+
+#### Agents
+| Column | Width | Description |
+|--------|-------|-------------|
+| NAME | 30 chars | Agent name (colored) |
+| DESCRIPTION | 50 chars | From agent markdown |
+
+#### Commands
+| Column | Width | Description |
+|--------|-------|-------------|
+| NAME | 30 chars | Command name (colored) |
+| DESCRIPTION | 50 chars | From command markdown |
+
+### Truncation
+
+Descriptions longer than 50 characters are truncated with "...":
 
 ```bash
-# Long descriptions are truncated
-$ claude-list --long
 SKILLS     1 available
-  NAME                            SOURCE         DESCRIPTION
-  ...
-  my-skill                        official       This is a very long description that exceed...
+  NAME                           SOURCE          DESCRIPTION
+  my-skill                       global          This is a very long description that exceed...
 ```
 
-## Comparison with Other Modes
+## Output Comparison
 
-### Compact Mode
+### Compact Mode (Default)
 
 ```
 CLAUDE-LIST v0.1.4
@@ -90,19 +118,25 @@ PLUGINS    2 installed
 
 SKILLS     3 available
   test-skill
-  ...
+  my-skill
 ```
 
-### Detailed Mode (New)
+### Detailed Mode (--long)
 
 ```
 CLAUDE-LIST v0.1.4
 CONFIG: /Users/test/.claude
 
 PLUGINS    2 installed
-  NAME                            SOURCE         DESCRIPTION
-  context7                        official       Official plugin
-  my-plugin                       third-party    Third-party plugin
+  NAME                           PATH
+  ------------------------------ --------------------------------------------------
+  context7                       /Users/test/.claude/plugins/cache/claude-plugins-official/context7/27d2b86d72da
+  my-plugin                      /Users/test/.claude/plugins/cache/my-org/my-plugin/1.0.0
+
+SKILLS     3 available
+  NAME                           SOURCE          DESCRIPTION
+  test-skill                     global          A test skill for demo purposes
+  my-skill                       my-plugin       Custom skill from my-plugin
 ```
 
 ### JSON Mode
@@ -114,11 +148,17 @@ $ claude-list --json
   "plugins": [
     {
       "name": "context7",
-      "source": "official",
-      "description": "Official plugin"
+      "path": "/Users/test/.claude/plugins/cache/...",
+      "source": "official"
     }
   ],
-  ...
+  "skills": [
+    {
+      "name": "test-skill",
+      "description": "A test skill for demo purposes",
+      "location_type": "global"
+    }
+  ]
 }
 ```
 
@@ -127,6 +167,7 @@ $ claude-list --json
 1. Use `--no-color` to disable colors in scripts
 2. Pipe to `head` to see first N lines: `claude-list --long | head -20`
 3. Use `--search` with `--long` to filter and show descriptions
+4. Plugins show PATH instead of description for better visibility
 
 ## Related
 
