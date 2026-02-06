@@ -9,7 +9,7 @@
   CLI tool for viewing installed plugins, skills, agents, and MCP servers in Claude Code.
 
   <div align="center">
-    <a href="https://github.com/elliotxx/claude-list/actions"><img alt="CI Status" src="https://img.shields.io/github/actions/workflow/status/elliotxx/claude-list?logo=github"/></a>
+    <a href="https://github.com/elliotxx/claude-list/actions"><img alt="CI Status" src="https://img.shields.io/github/actions/workflow/status/elliotxx/claude-list/ci.yml?branch=main&logo=github"/></a>
     <a href="https://crates.io/crates/claude-list"><img alt="Crates.io" src="https://img.shields.io/crates/v/claude-list"/></a>
     <a href="https://github.com/elliotxx/claude-list/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg"/></a>
     <a href="https://www.rust-lang.org/"><img alt="Rust" src="https://img.shields.io/badge/Rust-1.75+-orange.svg"/></a>
