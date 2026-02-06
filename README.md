@@ -17,10 +17,10 @@
 
   <p>
     <a href="#why-claude-list">Why?</a>
-    ◆ <a href="#quick-start">Quick Start</a>
-    ◆ <a href="#features">Features</a>
-    ◆ <a href="#installation">Installation</a>
-    ◆ <a href="#architecture">Architecture</a>
+    | <a href="#quick-start">Quick Start</a>
+    | <a href="#features">Features</a>
+    | <a href="#installation">Installation</a>
+    | <a href="#architecture">Architecture</a>
   </p>
 </div>
 
@@ -60,6 +60,10 @@ curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elliotxx/claude-list/re
 # View your Claude Code environment
 claude-list
 ```
+
+<div align="center">
+  <img src="./assets/demo.png" alt="claude-list in action" width="750">
+</div>
 
 **Need more details?** See [Installation](#installation) below for all installation options.
 
@@ -135,7 +139,17 @@ claude-list --config /path/to/.claude
 
 ## Demo
 
-### Compact Mode (Default)
+### Command-line Output
+
+Here's what claude-list looks like in action:
+
+<div align="center">
+  <img src="./assets/demo.png" alt="Command-line demo" width="750">
+</div>
+
+### Output Examples
+
+#### Compact Mode (Default)
 
 ```
 CLAUDE-LIST v0.1.2
@@ -158,7 +172,7 @@ MCP        2 servers
   another-mcp
 ```
 
-### Detailed Mode (`-l`)
+#### Detailed Mode (`-l`)
 
 ```
 CLAUDE-LIST v0.1.2
@@ -173,7 +187,7 @@ PLUGINS    3 installed
   plugin_example       0.5.0    community  /Users/user/.claude/settings.json
 ```
 
-### JSON Mode (`--json`)
+#### JSON Mode (`--json`)
 
 ```json
 {
