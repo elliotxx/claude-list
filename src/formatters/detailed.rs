@@ -248,8 +248,8 @@ pub fn format_detailed(
 mod tests {
     use super::*;
     use crate::info::{
-        AgentInfo, CommandInfo, HookInfo, McpInfo, PluginInfo, SessionInfo, SkillInfo, SkillLocation,
-        Source,
+        AgentInfo, CommandInfo, HookInfo, McpInfo, PluginInfo, SessionInfo, SkillInfo,
+        SkillLocation, Source,
     };
     use std::path::PathBuf;
 

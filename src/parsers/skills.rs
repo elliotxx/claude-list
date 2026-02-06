@@ -142,11 +142,7 @@ pub fn parse_skills(base_path: &Path) -> Result<Vec<SkillInfo>> {
 
     // Scan global skills directory
     let global_skills_dir = base_path.join("skills");
-    scan_skills_dir(
-        &global_skills_dir,
-        SkillLocation::Global,
-        &mut skills,
-    );
+    scan_skills_dir(&global_skills_dir, SkillLocation::Global, &mut skills);
 
     // Scan skills from installed plugins
     let plugins = get_plugins(base_path);

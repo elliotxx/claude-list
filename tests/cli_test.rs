@@ -1410,7 +1410,7 @@ fn test_detailed_output_with_search_and_colors() {
     assert!(stdout.contains("PATH")); // Plugins show PATH, not DESCRIPTION
                                       // Should filter by search
     assert!(stdout.contains("test-skill")); // Matches skill
-    // Should not show non-matching plugins
+                                            // Should not show non-matching plugins
     assert!(!stdout.contains("context7"));
 }
 
