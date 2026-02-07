@@ -160,4 +160,255 @@ mod tests {
         assert!(output.contains("SESSIONS"));
         assert!(output.contains("42"));
     }
+
+    #[test]
+    fn test_format_compact_empty() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("CLAUDE-LIST v0.1.0"));
+        assert!(output.contains("CONFIG: /test/.claude"));
+        // Should not contain any section headers when empty
+        assert!(!output.contains("PLUGINS"));
+        assert!(!output.contains("SKILLS"));
+        assert!(!output.contains("SESSIONS"));
+    }
+
+    #[test]
+    fn test_format_compact_with_mcp() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![crate::info::McpInfo {
+                name: "test-mcp".to_string(),
+                status: "connected".to_string(),
+                command: Some("npx".to_string()),
+                path: PathBuf::from("/test/.claude/mcp.json"),
+                description: None,
+            }],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("MCP"));
+        assert!(output.contains("1 servers"));
+        assert!(output.contains("test-mcp"));
+    }
+
+    #[test]
+    fn test_format_compact_with_hooks() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![crate::info::HookInfo {
+                name: "pre-commit".to_string(),
+                hook_type: "pre-commit".to_string(),
+                path: PathBuf::from("/test/.claude/hooks/pre-commit.md"),
+                description: None,
+            }],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("HOOKS"));
+        assert!(output.contains("1 configured"));
+        assert!(output.contains("pre-commit"));
+    }
+
+    #[test]
+    fn test_format_compact_with_agents() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![crate::info::AgentInfo {
+                name: "test-agent".to_string(),
+                description: Some("A test agent".to_string()),
+                path: PathBuf::from("/test/.claude/agents/test-agent.md"),
+            }],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("AGENTS"));
+        assert!(output.contains("1 defined"));
+        assert!(output.contains("test-agent"));
+    }
+
+    #[test]
+    fn test_format_compact_with_commands() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![crate::info::CommandInfo {
+                name: "test-command".to_string(),
+                description: Some("A test command".to_string()),
+                allowed_tools: None,
+                argument_hint: None,
+                path: PathBuf::from("/test/.claude/commands/test-command.md"),
+            }],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("COMMANDS"));
+        assert!(output.contains("1 available"));
+        assert!(output.contains("/test-command")); // Commands are prefixed with /
+    }
+
+    #[test]
+    fn test_format_compact_multiple_items() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![
+                PluginInfo {
+                    name: "plugin1".to_string(),
+                    version: Some("1.0.0".to_string()),
+                    source: Source::Official,
+                    path: PathBuf::from("/test"),
+                    description: None,
+                },
+                PluginInfo {
+                    name: "plugin2".to_string(),
+                    version: Some("2.0.0".to_string()),
+                    source: Source::Official,
+                    path: PathBuf::from("/test"),
+                    description: None,
+                },
+            ],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings::from_env();
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        assert!(output.contains("2 installed"));
+        assert!(output.contains("plugin1"));
+        assert!(output.contains("plugin2"));
+    }
+
+    #[test]
+    fn test_format_compact_no_color() {
+        let info = ClaudeInfo {
+            version: "0.1.0".to_string(),
+            config_dir: PathBuf::from("/test/.claude"),
+            plugins: vec![PluginInfo {
+                name: "test-plugin".to_string(),
+                version: Some("1.0.0".to_string()),
+                source: Source::Official,
+                path: PathBuf::from("/test"),
+                description: None,
+            }],
+            skills: vec![],
+            sessions: SessionInfo {
+                count: 0,
+                last_session: None,
+            },
+            mcp_servers: vec![],
+            hooks: vec![],
+            agents: vec![],
+            commands: vec![],
+        };
+
+        let color_scheme = ColorScheme::default();
+        let color_settings = ColorSettings {
+            enabled: false,
+            force_colors: false,
+        };
+
+        let mut buffer = Vec::new();
+        format_compact(&info, &color_scheme, &color_settings, &mut buffer).unwrap();
+        let output = String::from_utf8(buffer).unwrap();
+
+        // Should not contain ANSI escape codes
+        assert!(!output.contains("\x1b["));
+        assert!(output.contains("test-plugin"));
+    }
 }

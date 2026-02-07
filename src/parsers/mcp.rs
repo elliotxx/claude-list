@@ -7,7 +7,7 @@ use std::fs;
 use std::path::Path;
 
 pub fn parse_mcp(base_path: &Path) -> Result<Vec<McpInfo>> {
-    // Try new format: mcp-servers/ directory
+    // Try new format: mcp-servers/ directory (takes priority)
     let mcp_servers_dir = base_path.join("mcp-servers");
 
     if mcp_servers_dir.exists() && mcp_servers_dir.is_dir() {

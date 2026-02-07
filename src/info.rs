@@ -170,3 +170,266 @@ impl DescriptionProvider for CommandInfo {
         self.description.clone()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_plugin_info_description_provider_with_description() {
+        let plugin = PluginInfo {
+            name: "test-plugin".to_string(),
+            version: Some("1.0.0".to_string()),
+            source: Source::Official,
+            path: PathBuf::from("/test"),
+            description: Some("A test plugin".to_string()),
+        };
+
+        assert_eq!(plugin.get_description(), Some("A test plugin".to_string()));
+    }
+
+    #[test]
+    fn test_plugin_info_description_provider_without_description() {
+        let plugin = PluginInfo {
+            name: "test-plugin".to_string(),
+            version: Some("1.0.0".to_string()),
+            source: Source::Official,
+            path: PathBuf::from("/test"),
+            description: None,
+        };
+
+        assert_eq!(
+            plugin.get_description(),
+            Some("Official plugin".to_string())
+        );
+    }
+
+    #[test]
+    fn test_plugin_info_description_provider_third_party() {
+        let plugin = PluginInfo {
+            name: "test-plugin".to_string(),
+            version: Some("1.0.0".to_string()),
+            source: Source::ThirdParty,
+            path: PathBuf::from("/test"),
+            description: None,
+        };
+
+        assert_eq!(
+            plugin.get_description(),
+            Some("Third-party plugin".to_string())
+        );
+    }
+
+    #[test]
+    fn test_skill_info_description_provider_with_description() {
+        let skill = SkillInfo {
+            name: "test-skill".to_string(),
+            version: Some("1.0.0".to_string()),
+            source: Source::Official,
+            path: PathBuf::from("/test"),
+            description: Some("A test skill".to_string()),
+            location_type: SkillLocation::Global,
+        };
+
+        assert_eq!(skill.get_description(), Some("A test skill".to_string()));
+    }
+
+    #[test]
+    fn test_skill_info_description_provider_without_description() {
+        let skill = SkillInfo {
+            name: "test-skill".to_string(),
+            version: Some("1.0.0".to_string()),
+            source: Source::Official,
+            path: PathBuf::from("/test"),
+            description: None,
+            location_type: SkillLocation::Global,
+        };
+
+        assert_eq!(skill.get_description(), None);
+    }
+
+    #[test]
+    fn test_mcp_info_description_provider_with_description() {
+        let mcp = McpInfo {
+            name: "test-mcp".to_string(),
+            status: "connected".to_string(),
+            command: Some("npx".to_string()),
+            path: PathBuf::from("/test"),
+            description: Some("A test MCP server".to_string()),
+        };
+
+        assert_eq!(mcp.get_description(), Some("A test MCP server".to_string()));
+    }
+
+    #[test]
+    fn test_mcp_info_description_provider_without_description() {
+        let mcp = McpInfo {
+            name: "test-mcp".to_string(),
+            status: "connected".to_string(),
+            command: Some("npx".to_string()),
+            path: PathBuf::from("/test"),
+            description: None,
+        };
+
+        assert_eq!(
+            mcp.get_description(),
+            Some("connected MCP server".to_string())
+        );
+    }
+
+    #[test]
+    fn test_hook_info_description_provider_with_description() {
+        let hook = HookInfo {
+            name: "pre-commit".to_string(),
+            hook_type: "pre-commit".to_string(),
+            path: PathBuf::from("/test"),
+            description: Some("A pre-commit hook".to_string()),
+        };
+
+        assert_eq!(
+            hook.get_description(),
+            Some("A pre-commit hook".to_string())
+        );
+    }
+
+    #[test]
+    fn test_hook_info_description_provider_without_description() {
+        let hook = HookInfo {
+            name: "pre-commit".to_string(),
+            hook_type: "pre-commit".to_string(),
+            path: PathBuf::from("/test"),
+            description: None,
+        };
+
+        assert_eq!(hook.get_description(), Some("pre-commit hook".to_string()));
+    }
+
+    #[test]
+    fn test_agent_info_description_provider_with_description() {
+        let agent = AgentInfo {
+            name: "test-agent".to_string(),
+            description: Some("A test agent".to_string()),
+            path: PathBuf::from("/test"),
+        };
+
+        assert_eq!(agent.get_description(), Some("A test agent".to_string()));
+    }
+
+    #[test]
+    fn test_agent_info_description_provider_without_description() {
+        let agent = AgentInfo {
+            name: "test-agent".to_string(),
+            description: None,
+            path: PathBuf::from("/test"),
+        };
+
+        assert_eq!(agent.get_description(), None);
+    }
+
+    #[test]
+    fn test_command_info_description_provider_with_description() {
+        let command = CommandInfo {
+            name: "test-command".to_string(),
+            description: Some("A test command".to_string()),
+            allowed_tools: None,
+            argument_hint: None,
+            path: PathBuf::from("/test"),
+        };
+
+        assert_eq!(
+            command.get_description(),
+            Some("A test command".to_string())
+        );
+    }
+
+    #[test]
+    fn test_command_info_description_provider_without_description() {
+        let command = CommandInfo {
+            name: "test-command".to_string(),
+            description: None,
+            allowed_tools: None,
+            argument_hint: None,
+            path: PathBuf::from("/test"),
+        };
+
+        assert_eq!(command.get_description(), None);
+    }
+
+    #[test]
+    fn test_skill_location_default() {
+        let location = SkillLocation::default();
+        assert!(matches!(location, SkillLocation::Global));
+    }
+
+    #[test]
+    fn test_skill_location_plugin_with_name() {
+        let location = SkillLocation::Plugin {
+            plugin_name: Some("test-plugin".to_string()),
+        };
+        assert!(matches!(location, SkillLocation::Plugin { .. }));
+        if let SkillLocation::Plugin { plugin_name } = location {
+            assert_eq!(plugin_name, Some("test-plugin".to_string()));
+        }
+    }
+
+    #[test]
+    fn test_skill_location_plugin_without_name() {
+        let location = SkillLocation::Plugin { plugin_name: None };
+        assert!(matches!(location, SkillLocation::Plugin { .. }));
+        if let SkillLocation::Plugin { plugin_name } = location {
+            assert!(plugin_name.is_none());
+        }
+    }
+
+    #[test]
+    fn test_source_serialization() {
+        // Test that Source enum serializes correctly
+        let official = Source::Official;
+        let third_party = Source::ThirdParty;
+
+        // The serialization format uses serde(rename)
+        let official_json = serde_json::to_string(&official).unwrap();
+        assert_eq!(official_json, r#""official""#);
+
+        let third_party_json = serde_json::to_string(&third_party).unwrap();
+        assert_eq!(third_party_json, r#""third-party""#);
+    }
+
+    #[test]
+    fn test_source_deserialization() {
+        let official: Source = serde_json::from_str(r#""official""#).unwrap();
+        assert_eq!(official, Source::Official);
+
+        let third_party: Source = serde_json::from_str(r#""third-party""#).unwrap();
+        assert_eq!(third_party, Source::ThirdParty);
+    }
+
+    #[test]
+    fn test_plugin_info_serialization() {
+        let plugin = PluginInfo {
+            name: "test-plugin".to_string(),
+            version: Some("1.0.0".to_string()),
+            source: Source::Official,
+            path: PathBuf::from("/test"),
+            description: Some("A test plugin".to_string()),
+        };
+
+        let json = serde_json::to_string(&plugin).unwrap();
+        assert!(json.contains(r#""name":"test-plugin""#));
+        assert!(json.contains(r#""version":"1.0.0""#));
+        assert!(json.contains(r#""source":"official""#));
+    }
+
+    #[test]
+    fn test_skill_location_serialization() {
+        let global = SkillLocation::Global;
+        let json = serde_json::to_string(&global).unwrap();
+        assert!(json.contains(r#""type":"Global""#));
+
+        let plugin = SkillLocation::Plugin {
+            plugin_name: Some("test-plugin".to_string()),
+        };
+        let json = serde_json::to_string(&plugin).unwrap();
+        assert!(json.contains(r#""type":"Plugin""#));
+    }
+}
